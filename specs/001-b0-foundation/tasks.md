@@ -241,6 +241,6 @@ Each story ends at a checkpoint with its own test command and commit (Rule 16: o
 
 ## Phase 9: Convergence
 
-- [ ] T045 After Abdullrahman confirms the PR-base option recorded in docs/DECISIONS.md (2026-09-29), reconcile `001-b0-foundation` with `origin/main` accordingly and open the PR per T042 (partial)
+- [X] T045 After Abdullrahman confirms the PR-base option recorded in docs/DECISIONS.md (2026-09-29), reconcile `001-b0-foundation` with `origin/main` accordingly and open the PR per T042 (partial) — option A approved; merged in `7de20b1`; PR https://github.com/AbdullrahmanSayed/Hesbetak/pull/1
 - [X] T046 Remove the CI `retries` setting from playwright.config.ts so a flaky smoke failure fails the gate per plan: R11 / contracts/quality-gates.md `e2e` (unrequested)
 - [ ] T047 Have the reviewer confirm the binary-search `cairoDayRange` day start in src/lib/dates.ts that replaces research R7's `fromZonedTime` fallback (recorded in docs/DECISIONS.md) per T025 (contradicts)
