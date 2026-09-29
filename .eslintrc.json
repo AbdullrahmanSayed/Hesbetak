@@ -1,0 +1,68 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals"],
+  "plugins": ["@typescript-eslint"],
+  "ignorePatterns": [".next/", "coverage/", "playwright-report/", "test-results/"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/ban-ts-comment": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts", "src/**/*.tsx"],
+      "excludedFiles": ["src/lib/dates.ts"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "NewExpression[callee.name='Date'][arguments.length=0]",
+            "message": "Business dates must come from src/lib/dates.ts (Rule 11); do not read the clock with new Date()."
+          },
+          {
+            "selector": "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+            "message": "Business dates must come from src/lib/dates.ts (Rule 11); do not read the clock with Date.now()."
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/lib/money.ts"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          { "name": "parseFloat", "message": "Money must never pass through floating point (Rule 3, P4)." },
+          { "name": "parseInt", "message": "Money must never pass through number conversion (Rule 3, P4)." }
+        ],
+        "no-restricted-properties": [
+          "error",
+          { "object": "Number", "property": "parseFloat", "message": "Money must never pass through floating point (Rule 3, P4)." },
+          { "object": "Number", "property": "parseInt", "message": "Money must never pass through number conversion (Rule 3, P4)." },
+          { "property": "toFixed", "message": "Money must never be formatted through floating point (Rule 3, P4)." }
+        ],
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "NewExpression[callee.name='Date'][arguments.length=0]",
+            "message": "Business dates must come from src/lib/dates.ts (Rule 11); do not read the clock with new Date()."
+          },
+          {
+            "selector": "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+            "message": "Business dates must come from src/lib/dates.ts (Rule 11); do not read the clock with Date.now()."
+          },
+          {
+            "selector": "CallExpression[callee.name='Number']",
+            "message": "Money must never pass through JavaScript number (Rule 3, P4)."
+          },
+          {
+            "selector": "NewExpression[callee.name='Number']",
+            "message": "Money must never pass through JavaScript number (Rule 3, P4)."
+          },
+          {
+            "selector": "UnaryExpression[operator='+']",
+            "message": "Unary plus converts to number; money must stay bigint (Rule 3, P4)."
+          }
+        ]
+      }
+    }
+  ]
+}
