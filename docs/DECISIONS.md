@@ -168,3 +168,9 @@ Recorded under T040. None of these changes a product, accounting, or batch rule;
 - A `.gitattributes` forcing LF for Markdown/SQL/TS files (the builder machine has `core.autocrlf=true`; the agent-rules guard already normalizes line endings).
 - Upgrading from Next.js 14 (only backports; research R1) — requires a founder-approved amendment of Section 3.
 - The Section 11 accent color and the Arabic-Indic digit setting wiring (B9 Settings).
+## 2026-09-29 — Open question: PR base for `001-b0-foundation` (needs Abdullrahman)
+
+- Finding: `origin/main` now exists (`a89a4d0`, "Initial commit" created on GitHub 2026-09-29, containing only a two-line `README.md`). The B0 branch was started from the then-unborn local `main`, so the two histories share no commit and GitHub cannot open a pull request between them. Both sides contain a `README.md`.
+- Done under D-B0-07: only `001-b0-foundation` was pushed; `main` was not touched. CI run https://github.com/AbdullrahmanSayed/Hesbetak/actions/runs/36562884729 is 5/5 green on `60dad1f`.
+- Options: A) merge `origin/main` into `001-b0-foundation` with `--allow-unrelated-histories`, keeping the B0 `README.md` and adding the GitHub one-line description to it, then open the PR; B) rebase the B0 commits onto `origin/main` (rewrites the pushed branch history); C) review the branch without a PR and decide the merge approach at B0 approval.
+- Recommendation: **A** — no history rewrite, no change to `main`, and the PR shows exactly the B0 diff plus the README reconciliation. Not performed until confirmed.

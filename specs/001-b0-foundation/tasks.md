@@ -166,7 +166,7 @@ Single Next.js project at repository root: `src/`, `tests/unit/`, `tests/e2e/`, 
 - [X] T039 [P] Create CHANGELOG.md with a short `B0 — Foundation` entry (scope delivered, checks, deferred items), including a "B1 entry obligations" list copied from docs/DECISIONS.md § B1 entry obligations (DB monetary text before JSON decoding with adapter docs and round-trip tests; local Docker/disk; local clean-machine walkthrough; `docs/ACCOUNTING.md`)
 - [X] T040 [P] Update docs/DECISIONS.md: plan choices from research.md (Node 22, npm, Tailwind v3, date-fns v3, `eslint .` instead of `next lint`) and "no lint rules disabled" (Rule 14)
 - [X] T041 Run every quickstart.md scenario V1–V6 and every negative check; record exact commands and results
-- [ ] T042 approved D-B0-07 Commit T039–T040 (`docs:`), push `001-b0-foundation`, and confirm 5/5 CI jobs green on the push run (V7); record the run URL. Open a PR only if `git ls-remote --heads origin` shows a `main` branch; otherwise never create or push `main` (D-B0-07) and record that no PR base exists
+- [X] T042 approved D-B0-07 Commit T039–T040 (`docs:`), push `001-b0-foundation`, and confirm 5/5 CI jobs green on the push run (V7); record the run URL. Open a PR only if `git ls-remote --heads origin` shows a `main` branch; otherwise never create or push `main` (D-B0-07) and record that no PR base exists
 - [ ] T043 Prepare the B0 batch report per contracts/quality-gates.md §B0 batch report: changed-file list; exact local commands/results for typecheck, lint, unit (coverage numbers), pgTAP, Playwright (`passed` only if that exact local command ran and passed; else `blocked` + error) plus CI run link/status for all five jobs under D-B0-09; `not applicable — no ledger or seed scenario exists in B0`; `not applicable — Section 14 assigns no test to B0`; all review lines listed in contracts/quality-gates.md (FR-016/Rule 13, FR-023, Rules 1, 3, 15, 16, 18–19); SC-004 evidence (CI jobs run the README commands from a fresh checkout; local clean-machine walkthrough deferred to B1 under D-B0-09); the four B1 entry obligations from docs/DECISIONS.md; confirmation that the root HESBETAK_SPEC.md SHA-256 is still `084472721173072DD9DEB1E1695371F05F58A6A813A897CF6B12AFCDCA81B12D` and supabase/migrations/ has no files; known risks
 - [ ] T044 Run `/speckit-converge`; implement any appended tasks and converge again; then stop for Codex review and Abdullrahman's explicit B0 approval (no B1 work)
 
@@ -236,3 +236,11 @@ Each story ends at a checkpoint with its own test command and commit (Rule 16: o
 - 44 tasks. [P] = different files, no dependency on incomplete tasks, no package installation.
 - No task creates a migration, table, RPC, route group, Supabase client factory, seed, generated types, or `lucide-react` dependency (Rule 2, D-B0-06).
 - A check is reported `passed` only when its exact command ran and passed; otherwise `blocked`/`not applicable` with the reason.
+
+---
+
+## Phase 9: Convergence
+
+- [ ] T045 After Abdullrahman confirms the PR-base option recorded in docs/DECISIONS.md (2026-09-29), reconcile `001-b0-foundation` with `origin/main` accordingly and open the PR per T042 (partial)
+- [X] T046 Remove the CI `retries` setting from playwright.config.ts so a flaky smoke failure fails the gate per plan: R11 / contracts/quality-gates.md `e2e` (unrequested)
+- [ ] T047 Have the reviewer confirm the binary-search `cairoDayRange` day start in src/lib/dates.ts that replaces research R7's `fromZonedTime` fallback (recorded in docs/DECISIONS.md) per T025 (contradicts)
