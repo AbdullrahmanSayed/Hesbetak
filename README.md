@@ -1,6 +1,10 @@
 # Hesbetak (حسبتك)
 
-Multi-tenant web app for Egyptian electrical-appliance showrooms. The source of truth is
+Multi-tenant SaaS for Egyptian electrical-appliance showrooms: cash & installment sales, collections,
+inventory, and treasury, built on a double-entry ledger so every number is correct. Next.js ·
+Supabase · TypeScript.
+
+The source of truth is
 [`docs/HESBETAK_SPEC.md`](docs/HESBETAK_SPEC.md); decisions are recorded in
 [`docs/DECISIONS.md`](docs/DECISIONS.md). Agents follow [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md)
 (identical, Section 18 of the spec).
