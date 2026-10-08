@@ -38,9 +38,9 @@ export function cairoToday(): BusinessDate {
   return toBusinessDate(new Date());
 }
 
-/** Validates strict `YYYY-MM-DD` text that names a real calendar date; never throws. */
+/** Validates a civil Gregorian date in the four-digit range `0001-01-01`–`9999-12-31`; never throws. */
 export function parseBusinessDate(text: string): BusinessDate | null {
-  if (typeof text !== "string" || !BUSINESS_DATE_SHAPE.test(text)) {
+  if (typeof text !== "string" || !BUSINESS_DATE_SHAPE.test(text) || text.startsWith("0000-")) {
     return null;
   }
   const utcMidnight = Date.parse(`${text}T00:00:00.000Z`);
@@ -55,31 +55,32 @@ export function isBusinessDate(text: string): text is BusinessDate {
 }
 
 /**
- * The earliest instant whose Cairo business date is `date`, found by binary search over
- * milliseconds. Correct when local midnight does not exist (DST start) and when the day has a
- * repeated hour (DST end), because it relies only on the instant → business-date mapping.
+ * Finds the first instant inside or outside `date` around one of its UTC-midnight boundaries.
+ * Equality, rather than lexical year ordering, keeps the search correct at the `0001` boundary.
  */
-function startOfBusinessDay(date: BusinessDate): number {
-  const utcMidnight = Date.parse(`${date}T00:00:00.000Z`);
-  // Invariant: business date at `before` < date <= business date at `atOrAfter`.
-  let before = utcMidnight - SEARCH_WINDOW_MS;
-  let atOrAfter = utcMidnight + SEARCH_WINDOW_MS;
+function businessDayBoundary(date: BusinessDate, utcBoundary: number, findStart: boolean): number {
+  let before = utcBoundary - SEARCH_WINDOW_MS;
+  let atOrAfter = utcBoundary + SEARCH_WINDOW_MS;
   while (atOrAfter - before > 1) {
     const middle = Math.floor((before + atOrAfter) / 2);
-    if (toBusinessDate(new Date(middle)) < date) {
-      before = middle;
-    } else {
+    const isInsideDate = formatInTimeZone(new Date(middle), BUSINESS_TIME_ZONE, "yyyy-MM-dd") === date;
+    if (isInsideDate === findStart) {
       atOrAfter = middle;
+    } else {
+      before = middle;
     }
   }
   return atOrAfter;
 }
 
-/** Half-open instant range `[start, end)` of a Cairo business day (23, 24 or 25 hours long). */
+/** Half-open instant range `[start, end)` of a Cairo business day. */
 export function cairoDayRange(date: BusinessDate): { start: Date; end: Date } {
   if (!isBusinessDate(date)) {
     throw new BusinessDateError("cairoDayRange: expected a valid YYYY-MM-DD business date");
   }
-  const nextDate = new Date(Date.parse(`${date}T00:00:00.000Z`) + MS_PER_DAY).toISOString().slice(0, 10) as BusinessDate;
-  return { start: new Date(startOfBusinessDay(date)), end: new Date(startOfBusinessDay(nextDate)) };
+  const utcMidnight = Date.parse(`${date}T00:00:00.000Z`);
+  return {
+    start: new Date(businessDayBoundary(date, utcMidnight, true)),
+    end: new Date(businessDayBoundary(date, utcMidnight + MS_PER_DAY, false)),
+  };
 }

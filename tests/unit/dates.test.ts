@@ -99,7 +99,7 @@ describe.each(MACHINE_TIME_ZONES)("with machine time zone $zone", ({ zone, offse
 });
 
 describe("parseBusinessDate / isBusinessDate", () => {
-  it.each(["2026-02-30", "2026-13-01", "2026-02-29", "2026-04-31", "26-1-1", "2026-00-10", "2026-01-00", "2026-1-01", "2026-01-15T00:00", " 2026-01-15", ""])(
+  it.each(["0000-01-01", "2026-02-30", "2026-13-01", "2026-02-29", "2026-04-31", "26-1-1", "2026-00-10", "2026-01-00", "2026-1-01", "2026-01-15T00:00", " 2026-01-15", ""])(
     "rejects %j",
     (text) => {
       expect(parseBusinessDate(text)).toBeNull();
@@ -107,7 +107,7 @@ describe("parseBusinessDate / isBusinessDate", () => {
     },
   );
 
-  it.each(["2024-02-29", "2026-01-15", "2025-12-31", "2026-04-30"])("accepts %j", (text) => {
+  it.each(["0001-01-01", "2024-02-29", "2026-01-15", "2025-12-31", "2026-04-30", "9999-12-31"])("accepts %j", (text) => {
     expect(parseBusinessDate(text)).toBe(text);
     expect(isBusinessDate(text)).toBe(true);
   });
@@ -127,6 +127,16 @@ describe("errors and constants", () => {
   it("toBusinessDate rejects invalid dates and non-Date values", () => {
     expect(() => toBusinessDate(new Date("invalid"))).toThrow(BusinessDateError);
     expect(() => toBusinessDate("2026-01-15" as unknown as Date)).toThrow(BusinessDateError);
+  });
+
+  it("cairoDayRange supports the complete civil four-digit year range", () => {
+    for (const date of ["0001-01-01", "9999-12-31"]) {
+      const { start, end } = cairoDayRange(businessDate(date));
+      expect(start.getTime()).toBeLessThan(end.getTime());
+      expect(toBusinessDate(start)).toBe(date);
+      expect(toBusinessDate(new Date(start.getTime() - 1))).not.toBe(date);
+      expect(toBusinessDate(new Date(end.getTime() - 1))).toBe(date);
+    }
   });
 
   it("cairoDayRange rejects impossible business dates", () => {

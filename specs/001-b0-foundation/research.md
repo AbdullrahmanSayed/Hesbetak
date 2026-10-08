@@ -73,14 +73,12 @@ same line is acceptable.
 
 - **Decision**: `date-fns@3` + `date-fns-tz@3.2.0`; zone constant `Africa/Cairo`.
   Conversion uses `formatInTimeZone(instant, 'Africa/Cairo', 'yyyy-MM-dd')`. Day start is defined as
-  the earliest instant whose Cairo business date is the given date. On a DST-start day local `00:00`
-  does not exist, and `fromZonedTime('<date>T00:00:00', 'Africa/Cairo')` may resolve it with the
-  post-transition offset (giving 23:00 of the previous day). The implementation therefore computes the
-  candidate, verifies `toBusinessDate(candidate) === date`, and otherwise uses the offset in effect
-  just before the transition (via `getTimezoneOffset`). On a DST-end day the repeated hour is
-  23:00–24:00 local, so midnight is unambiguous and the day is 25 hours long.
-  The exclusive end is the next day's start. Validation is a strict `YYYY-MM-DD` regex plus a calendar
-  round-trip check.
+  the earliest instant whose Cairo business date is the given date. Because local `00:00` can be
+  missing or repeated, the implementation finds both boundaries by millisecond binary search over the
+  instant → Cairo-date mapping. Equality rather than lexical year ordering preserves the invariant at
+  civil year `0001`; finding the end directly lets `9999-12-31` work without constructing a public
+  year-10000 `BusinessDate`. Validation is a strict `YYYY-MM-DD` regex plus a calendar round-trip check
+  for civil years `0001`–`9999`; year `0000` is invalid.
 - **Rationale**: Section 3 names these libraries; they rely on `Intl` time-zone data, so results do not
   depend on the process time zone.
 - **DST facts used by tests** (Egypt rules since 2023: DST starts last Friday of April 00:00 → 01:00,

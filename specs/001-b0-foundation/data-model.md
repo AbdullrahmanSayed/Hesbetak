@@ -36,7 +36,7 @@ B0 founder decisions D-B0-01…D-B0-11 and the Section 18 Rule 3 amendment are c
 |-----------|------|
 | Representation | string `YYYY-MM-DD`, branded `BusinessDate` |
 | Meaning | A calendar date in `Africa/Cairo` (Section 2 P10); no time, no zone |
-| Validity | Matches `^\d{4}-\d{2}-\d{2}$` **and** is a real calendar date (round-trip check) |
+| Validity | Civil Gregorian date from `0001-01-01` through `9999-12-31`; matches `^\d{4}-\d{2}-\d{2}$` **and** is a real calendar date (round-trip check). Year `0000` is invalid. |
 | Creation | `cairoToday()`, `toBusinessDate(instant)`, `parseBusinessDate(text)` only |
 | Ordering | ISO strings compare correctly with `<`/`>`; no extra helper in B0 |
 
@@ -44,7 +44,7 @@ B0 founder decisions D-B0-01…D-B0-11 and the Section 18 Rule 3 amendment are c
 
 - `{ start: Date, end: Date }`, half-open `[start, end)`; `start` = the earliest instant whose Cairo
   business date is the given date; `end` = `start` of the next Cairo day.
-- Length is 23 h, 24 h, or 25 h depending on DST.
+- Modern Cairo days are 23 h, 24 h, or 25 h depending on DST. Historical time-zone offsets may produce other exact durations; boundaries always follow the instant-to-Cairo-date mapping.
 
 ## APP_NAME (configuration) — `src/config/app.ts`
 

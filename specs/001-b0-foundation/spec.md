@@ -207,8 +207,8 @@ Section 18 of the master spec verbatim.
   date (`Africa/Cairo`) as a calendar date value, independent of device and server time zones.
 - **FR-009**: The date helper MUST convert any instant to its Cairo business date and MUST provide the
   half-open start/end instants of a given Cairo business day, correct on DST transition days.
-- **FR-010**: The date helper MUST validate business-date text in `YYYY-MM-DD` form and reject
-  impossible calendar dates.
+- **FR-010**: The date helper MUST validate civil Gregorian business-date text in `YYYY-MM-DD` form
+  from `0001-01-01` through `9999-12-31`, reject year `0000`, and reject impossible calendar dates.
 - **FR-011**: Application code MUST NOT read the device clock for business dates outside the shared
   date helper; this MUST be enforced by an automated check (Rule 11).
 
