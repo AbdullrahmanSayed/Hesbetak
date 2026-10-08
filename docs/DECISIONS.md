@@ -181,3 +181,10 @@ Recorded under T040. None of these changes a product, accounting, or batch rule;
 - Finding: T047 review found that the original binary search was correct for the documented modern vectors and millisecond-exact, but the public `YYYY-MM-DD` contract did not state a supported year range. `0001-01-01` crossed the BCE boundary inside the search window, where year-of-era formatting broke the string-order invariant; `9999-12-31` could not form its next public `YYYY-MM-DD` date. Historical Cairo offsets can also produce day lengths outside the modern 23/24/25-hour set.
 - Options reviewed: A) define a narrower modern range; B) support all civil four-digit years (`0001`–`9999`); C) defer extreme-year hardening.
 - Decision: **Approved by Abdullrahman, 2026-09-29 — option B.** Year `0000` is invalid; `BusinessDate` supports `0001-01-01` through `9999-12-31`. Boundary search uses equality instead of lexical year ordering and computes the end boundary without constructing a public year-10000 `BusinessDate`. Historical Cairo offsets retain exact instant boundaries even when a historical day is not exactly 23, 24 or 25 hours.
+
+## 2026-10-08 — B0 approval record
+
+- Abdullrahman merged PR #1 (`001-b0-foundation` → `main`, merge commit `5ccdeaf`) on 2026-09-29 and confirmed on 2026-10-08 that this merge is his explicit approval of B0 (Section 17).
+- The T047 fix `d1fb0e3` (approved option B above) was pushed after that merge; it reaches `main` through PR #2, with CI 5/5 green on `d1fb0e3` (run https://github.com/AbdullrahmanSayed/Hesbetak/actions/runs/37714023630).
+- PR #1 carries no recorded Codex review on GitHub. From PR #2 onward, Codex reviews on the PR (`@codex review`) so the review is recorded.
+- B1 still waits for the B1 entry obligations above, in particular a local container runtime and disk (D-B0-09 / D-B0-11); the B0 CI-only fallback does not apply to B1.
