@@ -10,8 +10,9 @@ Delivered:
 - `src/lib/money.ts`: signed-64-bit `bigint` piasters, strict Arabic/Western input parser with approved
   Arabic messages, `20,000.00 ج.م` formatter (negative and Arabic-Indic variants), Section 8.2 rounding
   primitives, and decimal-string JSON wire helpers — 100% unit-test coverage.
-- `src/lib/dates.ts`: Africa/Cairo business dates, strict date validation, and 23/24/25-hour day ranges —
-  100% coverage, tested under three machine time zones.
+- `src/lib/dates.ts`: Africa/Cairo business dates, strict civil-year `0001`–`9999` validation, and
+  millisecond-exact day ranges across modern DST and historical offsets — 100% coverage, tested under
+  three machine time zones.
 - Local Supabase configuration (no migrations, seeding disabled), a pgTAP harness, a five-job GitHub
   Actions gate (typecheck, lint, unit, pgTAP, Playwright smoke), repository guards (agent rules, product
   name, no migrations), and identical `CLAUDE.md` / `AGENTS.md` carrying Section 18.
