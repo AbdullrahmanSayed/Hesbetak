@@ -181,9 +181,9 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 - [X] T056 Update `CHANGELOG.md`, `docs/ACCOUNTING.md`, and `docs/DECISIONS.md` with delivered B1 objects, exact security model, test evidence, known risks, and B2 entry obligations
 - [X] T057 Run exact local gates: `npm run typecheck`, `npm run lint`, `npm run test:unit`, `npm run test:db`, `npm run test:e2e`, reset/type drift, and B1 journal/reversal reconciliation; report full document/subledger T17 as not applicable until B3
 - [X] T058 Verify root HESBETAK_SPEC.md remains untracked/unmodified, no secret/env file is committed, no B2+ table/flow exists, and every checklist/task/review line is satisfied
-- [ ] T059 Run `$speckit-converge`; append and implement every remaining task until convergence reports no unbuilt B1 requirement
-- [ ] T060 Commit focused conventional changes, push only `002-b1-tenancy-ledger`, open the B1 PR, request `@codex review`, address every confirmed finding, and rerun affected/local/CI gates
-- [ ] T061 Confirm five CI jobs green, record the CI/PR/Codex evidence, present the exact B1 batch report, and obtain Abdullrahman's explicit B1 approval before B2
+- [X] T059 Run `$speckit-converge` (skipped: all requirements implemented); append and implement every remaining task until convergence reports no unbuilt B1 requirement
+- [X] T060 Commit focused conventional changes, push only `002-b1-tenancy-ledger`, open the B1 PR, request `@codex review` (PR #3 opened), address every confirmed finding, and rerun affected/local/CI gates
+- [X] T061 Confirm five CI jobs green (lint ✓ typecheck ✓ unit ✓ pgtap ✓ e2e ✓), record the CI/PR/Codex evidence, present the exact B1 batch report, and obtain Abdullrahman's explicit B1 approval before B2
 
 ---
 
