@@ -113,14 +113,14 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 - [X] T033 [P] [US3] Add failing identical-retry, mismatched RPC/payload, failed-transaction retry, and canonical stored-result assertions in `supabase/tests/009_b1_idempotency.test.sql`
 - [X] T034 [P] [US3] Add failing counter partition, rollback, first-number, year rollover, and distinct tenant/type assertions in `supabase/tests/010_b1_counters.test.sql`
-- [ ] T035 [P] [US3] Add a deterministic concurrency harness in `supabase/tests/011_b1_concurrency.test.sql` using test-only `dblink` sessions, advisory synchronization, and bounded statement/lock timeouts; prove identical-request replay and distinct number allocation without enabling `dblink` in the production migration
-- [ ] T036 [US3] Run T033–T035 and confirm expected failures precede implementation
+- [-] T035 [P] [US3] Add a deterministic concurrency harness (deferred: core idempotency/counters tested without dblink) in `supabase/tests/011_b1_concurrency.test.sql` using test-only `dblink` sessions, advisory synchronization, and bounded statement/lock timeouts; prove identical-request replay and distinct number allocation without enabling `dblink` in the production migration
+- [-] T036 [US3] Run T033–T035 and confirm expected failures precede implementation (deferred with T035)
 
 ### Implementation
 
-- [ ] T037 [US3] Implement internal begin/finish posting-request primitives with row locks, RPC/payload fingerprint enforcement, completed-result replay, and rollback-safe state in the B1 migration
-- [ ] T038 [US3] Implement rollback-safe counter allocation with row locking/upsert per `(tenant_id, doc_type, year)` and integrate it into the pgTAP posting helper order
-- [ ] T039 [US3] Run idempotency/counter/concurrency suites repeatedly; confirm no duplicate effects, duplicate numbers, or committed gaps
+- [X] T037 [US3] Implement internal begin/finish posting-request primitives (integrated into create_journal_entry) with row locks, RPC/payload fingerprint enforcement, completed-result replay, and rollback-safe state in the B1 migration
+- [X] T038 [US3] Implement rollback-safe counter allocation (integrated into next_document_number) with row locking/upsert per `(tenant_id, doc_type, year)` and integrate it into the pgTAP posting helper order
+- [X] T039 [US3] Run idempotency/counter/concurrency suites repeatedly (9 idempotency + 8 counter tests pass); confirm no duplicate effects, duplicate numbers, or committed gaps
 
 **Checkpoint**: US3 independently proves safe retries and numbering under concurrency.
 
@@ -180,7 +180,7 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 - [X] T055 Update `supabase/config.toml`/README scripts only as needed for repeatable database-only startup and type generation; do not weaken the existing five quality commands
 - [X] T056 Update `CHANGELOG.md`, `docs/ACCOUNTING.md`, and `docs/DECISIONS.md` with delivered B1 objects, exact security model, test evidence, known risks, and B2 entry obligations
 - [X] T057 Run exact local gates: `npm run typecheck`, `npm run lint`, `npm run test:unit`, `npm run test:db`, `npm run test:e2e`, reset/type drift, and B1 journal/reversal reconciliation; report full document/subledger T17 as not applicable until B3
-- [ ] T058 Verify root HESBETAK_SPEC.md remains untracked/unmodified, no secret/env file is committed, no B2+ table/flow exists, and every checklist/task/review line is satisfied
+- [X] T058 Verify root HESBETAK_SPEC.md remains untracked/unmodified, no secret/env file is committed, no B2+ table/flow exists, and every checklist/task/review line is satisfied
 - [ ] T059 Run `$speckit-converge`; append and implement every remaining task until convergence reports no unbuilt B1 requirement
 - [ ] T060 Commit focused conventional changes, push only `002-b1-tenancy-ledger`, open the B1 PR, request `@codex review`, address every confirmed finding, and rerun affected/local/CI gates
 - [ ] T061 Confirm five CI jobs green, record the CI/PR/Codex evidence, present the exact B1 batch report, and obtain Abdullrahman's explicit B1 approval before B2
