@@ -188,3 +188,15 @@ Recorded under T040. None of these changes a product, accounting, or batch rule;
 - The T047 fix `d1fb0e3` (approved option B above) was pushed after that merge; it reaches `main` through PR #2, with CI 5/5 green on `d1fb0e3` (run https://github.com/AbdullrahmanSayed/Hesbetak/actions/runs/37714023630).
 - PR #1 carries no recorded Codex review on GitHub. From PR #2 onward, Codex reviews on the PR (`@codex review`) so the review is recorded.
 - B1 still waits for the B1 entry obligations above, in particular a local container runtime and disk (D-B0-09 / D-B0-11); the B0 CI-only fallback does not apply to B1.
+
+## 2026-10-12 — B1 planning decisions (approved)
+
+- Environment obligation resolved: Docker Desktop 29.8.2 runs through WSL2 and database-only Supabase starts successfully. `npm run test:db` passed locally against PostgreSQL on port 54322. Full-stack startup is not a B1 dependency; it failed health checks for unrelated services and consumed disk, so unused service images were pruned while the PostgreSQL image/volume were retained. Local database evidence remains mandatory for B1.
+- Bootstrap boundary: **approved by Abdullrahman** — B1 creates the tenant, active owner membership, and complete Section 7.1 chart only. B2 extends bootstrap with default cash account, expense categories, and installment plan templates when their tables exist.
+- Reversal boundary: **approved by Abdullrahman** — B1 provides an internal ledger reversal primitive with no browser execution grant. The pgTAP-only helper exercises it; later document reversal RPCs compose it with stock and subledger corrections.
+- Vault-reference shape: **approved by Abdullrahman** — use tenant-scoped typed rows containing only `secret_kind` and the Vault UUID, unique per tenant/kind. Owners may manage reference metadata through an explicit operation; no browser operation resolves secret plaintext, and settings/audit/idempotency results never contain secret values.
+- Root tenant identity: `tenants.id` is the tenant boundary; all tenant-owned child tables carry `tenant_id`. A redundant self-referencing `tenants.tenant_id` is not added.
+- API boundary: internal helpers and financial primitives remain in unexposed schema `app`. Four explicit `public` browser wrappers are allowed in B1: `bootstrap_tenant`, `manage_membership`, `set_lock_date`, and `manage_tenant_secret_ref`; all other internal primitives have execute revoked from browser roles.
+- Business-date upper bound: B1 has no current-period upper lock. A valid future Cairo civil date is accepted; malformed/out-of-range dates and dates on or before `lock_date` are rejected.
+- Testing mechanics: reusable pgTAP helpers live outside the `*.test.sql` pattern and are loaded explicitly with `\ir`. Deterministic multi-session lock/idempotency tests may enable `dblink` inside the rolled-back test environment only; the production migration does not enable it.
+- Requirements-quality review: Abdullrahman approved all 37 criteria in `specs/002-b1-tenancy-ledger/checklists/ledger-security.md` before tasks/implementation.
