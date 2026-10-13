@@ -18,3 +18,12 @@ supabase/.temp/
 
 # local agent state (may hold local credentials)
 .claude/settings.local.json
+
+# local logs, editor, and OS files
+*.log
+*.tmp
+*.swp
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

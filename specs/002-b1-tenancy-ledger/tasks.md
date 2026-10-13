@@ -42,13 +42,13 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 **⚠️ CRITICAL**: No story implementation begins until these tests fail for the expected missing objects and the migration skeleton exists.
 
-- [ ] T009 [P] Add reusable pgTAP Auth/JWT, tenant, role, privilege, and exception helpers in `supabase/tests/helpers/b1.sql`; every `*.test.sql` suite that needs them MUST load them with psql `\ir`, and helpers MUST create no persistent production fixtures
-- [ ] T010 [P] Add failing schema/constraint/index/grant assertions for every B1 enum, table, column, FK, check, unique key, tenant-first index, RLS flag, and forbidden B2 object in `supabase/tests/002_b1_schema.test.sql`
-- [ ] T011 [P] Add failing T16 privilege assertions for default function execute revocation, internal primitive denial, direct ledger/audit DML denial, fixed search paths, and append-only guards in `supabase/tests/003_b1_security.test.sql`
-- [ ] T012 Run `npm run test:db`; save the expected missing-object failures for T009–T011 before migration implementation
-- [ ] T013 Create one forward-only migration `supabase/migrations/<timestamp>_b1_tenancy_ledger_core.sql` with required extensions, `app` schema, B1 enums, table skeletons, checks, FKs, tenant-first indexes, default privilege revocations, RLS enablement, and no B2+ tables
-- [ ] T014 Implement immutable audit/journal guard triggers and deferred journal balance/line-count constraint trigger in the B1 migration; keep journal lines permanently immutable
-- [ ] T015 Implement fixed-context `app.current_user_id`, `app.is_member`, `app.has_role`, tenant-state, same-tenant account, audit sanitization, and balance assertion helpers in the B1 migration with no browser grants
+- [X] T009 [P] Add reusable pgTAP Auth/JWT, tenant, role, privilege, and exception helpers in `supabase/tests/helpers/b1.inc`; every `*.test.sql` suite that needs them MUST load them with psql `\ir`, and helpers MUST create no persistent production fixtures
+- [X] T010 [P] Add failing schema/constraint/index/grant assertions for every B1 enum, table, column, FK, check, unique key, tenant-first index, RLS flag, and forbidden B2 object in `supabase/tests/002_b1_schema.test.sql`
+- [X] T011 [P] Add failing T16 privilege assertions for default function execute revocation, internal primitive denial, direct ledger/audit DML denial, fixed search paths, and append-only guards in `supabase/tests/003_b1_security.test.sql`
+- [X] T012 Run `npm run test:db`; save the expected missing-object failures for T009–T011 before migration implementation
+- [X] T013 Create one forward-only migration `supabase/migrations/<timestamp>_b1_tenancy_ledger_core.sql` with required extensions, `app` schema, B1 enums, table skeletons, checks, FKs, tenant-first indexes, default privilege revocations, RLS enablement, and no B2+ tables
+- [X] T014 Implement immutable audit/journal guard triggers and deferred journal balance/line-count constraint trigger in the B1 migration; keep journal lines permanently immutable
+- [X] T015 Implement fixed-context `app.current_user_id`, `app.is_member`, `app.has_role`, tenant-state, same-tenant account, audit sanitization, and balance assertion helpers in the B1 migration with no browser grants
 - [ ] T016 Run schema/security pgTAP and `npx supabase db reset`; confirm migration applies from zero and T010–T011 pass before story work
 
 **Checkpoint**: Shared schema, grants, RLS foundations, and deferred ledger invariant exist.
