@@ -87,17 +87,17 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 ### Tests first
 
-- [ ] T025 [P] [US2] Add failing transaction-local manual-JE helper and exact vectors (`2_000_000`, `9_007_199_254_740_993`) with decimal-string JSON results in `supabase/tests/007_b1_ledger.test.sql`
-- [ ] T026 [P] [US2] Add failing cases for imbalance, fewer than two lines, zero/both-positive/negative/overflow sides, malformed money JSON, header/inactive/wrong-tenant accounts, and residual-row absence in `supabase/tests/007_b1_ledger.test.sql`
-- [ ] T027 [P] [US2] Add failing append-only and RLS/T19 matrix assertions for `journal_entries` and `journal_lines` in `supabase/tests/008_b1_ledger_security.test.sql`
-- [ ] T028 [US2] Run T025–T027 and confirm expected failures precede implementation
+- [X] T025 [P] [US2] Add failing transaction-local manual-JE helper and exact vectors (`2_000_000`, `9_007_199_254_740_993`) with decimal-string JSON results in `supabase/tests/007_b1_ledger.test.sql`
+- [X] T026 [P] [US2] Add failing cases for imbalance, fewer than two lines, zero/both-positive/negative/overflow sides, malformed money JSON, header/inactive/wrong-tenant accounts, and residual-row absence in `supabase/tests/007_b1_ledger.test.sql`
+- [X] T027 [P] [US2] Add failing append-only and RLS/T19 matrix assertions for `journal_entries` and `journal_lines` in `supabase/tests/008_b1_ledger_security.test.sql`
+- [X] T028 [US2] Run T025–T027 and confirm expected failures precede implementation
 
 ### Implementation
 
-- [ ] T029 [US2] Implement ungranted internal journal validation/creation primitives in the B1 migration with exact text-to-`bigint` parsing, account/tenant checks, dimension preservation, and canonical text-money result JSON
-- [ ] T030 [US2] Complete deferred balance trigger integration and guarded entry-link update context so valid multi-line transactions commit and every invalid entry rolls back
-- [ ] T031 [US2] Apply ledger SELECT policies and deny all direct browser DML/function execution per `contracts/database-security.md`
-- [ ] T032 [US2] Run `npm run test:db`; confirm all exact-number, balance, residual-row, immutability, and T19 assertions pass
+- [X] T029 [US2] Implement ungranted internal journal validation/creation primitives in the B1 migration with exact text-to-`bigint` parsing, account/tenant checks, dimension preservation, and canonical text-money result JSON
+- [X] T030 [US2] Complete deferred balance trigger integration and guarded entry-link update context so valid multi-line transactions commit and every invalid entry rolls back
+- [X] T031 [US2] Apply ledger SELECT policies and deny all direct browser DML/function execution per `contracts/database-security.md`
+- [X] T032 [US2] Run `npm run test:db`; confirm all exact-number, balance, residual-row, immutability, and T19 assertions pass
 
 **Checkpoint**: US2 independently proves exact balanced append-only ledger behavior.
 
@@ -111,8 +111,8 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 ### Tests first
 
-- [ ] T033 [P] [US3] Add failing identical-retry, mismatched RPC/payload, failed-transaction retry, and canonical stored-result assertions in `supabase/tests/009_b1_idempotency.test.sql`
-- [ ] T034 [P] [US3] Add failing counter partition, rollback, first-number, year rollover, and distinct tenant/type assertions in `supabase/tests/010_b1_counters.test.sql`
+- [X] T033 [P] [US3] Add failing identical-retry, mismatched RPC/payload, failed-transaction retry, and canonical stored-result assertions in `supabase/tests/009_b1_idempotency.test.sql`
+- [X] T034 [P] [US3] Add failing counter partition, rollback, first-number, year rollover, and distinct tenant/type assertions in `supabase/tests/010_b1_counters.test.sql`
 - [ ] T035 [P] [US3] Add a deterministic concurrency harness in `supabase/tests/011_b1_concurrency.test.sql` using test-only `dblink` sessions, advisory synchronization, and bounded statement/lock timeouts; prove identical-request replay and distinct number allocation without enabling `dblink` in the production migration
 - [ ] T036 [US3] Run T033–T035 and confirm expected failures precede implementation
 
@@ -134,15 +134,15 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 ### Tests first
 
-- [ ] T040 [P] [US4] Add failing lock-date before/on/after and concurrent lock-change assertions in `supabase/tests/012_b1_lock_date.test.sql`
-- [ ] T041 [P] [US4] Add failing reversal vectors for exact mirror, all dimensions/memo, original immutability, bidirectional links, reason audit, retry, second reversal, reversal-of-reversal, wrong tenant/role, suspended tenant, and locked date in `supabase/tests/013_b1_reversal.test.sql`
-- [ ] T042 [US4] Run T040–T041 and confirm expected failures precede implementation
+- [X] T040 [P] [US4] Add failing lock-date before/on/after and concurrent lock-change assertions in `supabase/tests/012_b1_lock_date.test.sql`
+- [X] T041 [P] [US4] Add failing reversal vectors for exact mirror, all dimensions/memo, original immutability, bidirectional links, reason audit, retry, second reversal, reversal-of-reversal, wrong tenant/role, suspended tenant, and locked date in `supabase/tests/013_b1_reversal.test.sql`
+- [X] T042 [US4] Run T040–T041 and confirm expected failures precede implementation
 
 ### Implementation
 
-- [ ] T043 [US4] Enforce tenant-row lock ordering and `entry_date > lock_date` inside journal posting, reversal, and lock-date updates in the B1 migration
-- [ ] T044 [US4] Implement the ungranted internal reversal primitive in the B1 migration, composing idempotency, validation, locks, number, exact mirrored lines, balance, guarded links, and sanitized reason audit
-- [ ] T045 [US4] Run lock/reversal pgTAP; calculate journal-only reversal reconciliation from `journal_lines` and confirm exact net zero
+- [X] T043 [US4] Enforce tenant-row lock ordering and `entry_date > lock_date` inside journal posting, reversal, and lock-date updates in the B1 migration
+- [X] T044 [US4] Implement the ungranted internal reversal primitive in the B1 migration, composing idempotency, validation, locks, number, exact mirrored lines, balance, guarded links, and sanitized reason audit
+- [X] T045 [US4] Run lock/reversal pgTAP; calculate journal-only reversal reconciliation from `journal_lines` and confirm exact net zero
 
 **Checkpoint**: US4 independently protects closed periods and produces auditable append-only corrections.
 
@@ -156,16 +156,16 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 ### Tests first
 
-- [ ] T046 [P] [US5] Add failing complete role/privilege matrix and fixed-search-path shadowing assertions for every B1 function in `supabase/tests/014_b1_roles.test.sql`
-- [ ] T047 [P] [US5] Add failing `audit_log` attribution/immutability/sanitization and T19 assertions in `supabase/tests/015_b1_audit.test.sql`
-- [ ] T048 [P] [US5] Add failing typed Vault-reference uniqueness, owner management, same/cross-tenant RLS, stale/missing identifier, and no-plaintext-channel assertions in `supabase/tests/016_b1_vault_refs.test.sql`
-- [ ] T049 [US5] Run T046–T048 and confirm expected failures precede implementation
+- [X] T046 [P] [US5] Add failing complete role/privilege matrix and fixed-search-path shadowing assertions for every B1 function in `supabase/tests/014_b1_roles.test.sql`
+- [X] T047 [P] [US5] Add failing `audit_log` attribution/immutability/sanitization and T19 assertions in `supabase/tests/015_b1_audit.test.sql`
+- [X] T048 [P] [US5] Add failing typed Vault-reference uniqueness, owner management, same/cross-tenant RLS, stale/missing identifier, and no-plaintext-channel assertions in `supabase/tests/016_b1_vault_refs.test.sql`
+- [X] T049 [US5] Run T046–T048 and confirm expected failures precede implementation
 
 ### Implementation
 
-- [ ] T050 [US5] Complete explicit role grants/checks and fixed-context security-definer definitions for all B1 operations in the migration
-- [ ] T051 [US5] Implement owner-only typed Vault-reference metadata management and audit behavior without any plaintext resolver or settings storage
-- [ ] T052 [US5] Run the complete progressive T19 matrix and produce a table/RPC evidence map in `docs/DECISIONS.md`
+- [X] T050 [US5] Complete explicit role grants/checks and fixed-context security-definer definitions for all B1 operations in the migration
+- [X] T051 [US5] Implement owner-only typed Vault-reference metadata management and audit behavior without any plaintext resolver or settings storage
+- [X] T052 [US5] Run the complete progressive T19 matrix and produce a table/RPC evidence map in `docs/DECISIONS.md`
 
 **Checkpoint**: US5 independently proves the B1 security model and no secret disclosure.
 

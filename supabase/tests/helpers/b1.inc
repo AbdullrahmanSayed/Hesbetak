@@ -77,5 +77,60 @@ begin
 end;
 $$;
 
+create or replace function tests.post_manual_entry(
+  p_tenant_id uuid,
+  p_request_id uuid,
+  p_entry_date date,
+  p_source_id uuid,
+  p_description text,
+  p_lines jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not app.has_role(p_tenant_id, array['owner', 'accountant']::public.membership_role[]) then
+    raise exception using errcode = '42501', message = 'accounting role required';
+  end if;
+  return app.create_journal_entry(
+    p_tenant_id,
+    p_request_id,
+    p_entry_date,
+    'b1_test',
+    p_source_id,
+    p_description,
+    p_lines
+  );
+end;
+$$;
+
+create or replace function tests.reverse_entry(
+  p_tenant_id uuid,
+  p_request_id uuid,
+  p_original_entry_id uuid,
+  p_reversal_date date,
+  p_reason text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not app.has_role(p_tenant_id, array['owner', 'accountant']::public.membership_role[]) then
+    raise exception using errcode = '42501', message = 'accounting role required';
+  end if;
+  return app.reverse_journal_entry(
+    p_tenant_id,
+    p_request_id,
+    p_original_entry_id,
+    p_reversal_date,
+    p_reason
+  );
+end;
+$$;
+
 grant usage on schema tests to authenticated, service_role;
 grant execute on all functions in schema tests to authenticated, service_role;

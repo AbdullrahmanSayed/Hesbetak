@@ -353,11 +353,12 @@ create policy memberships_select_member on public.memberships for select to auth
 create policy accounts_select_member on public.accounts for select to authenticated using (app.is_member(tenant_id));
 create policy journal_entries_select_member on public.journal_entries for select to authenticated using (app.is_member(tenant_id));
 create policy journal_lines_select_member on public.journal_lines for select to authenticated using (app.is_member(tenant_id));
+create policy document_counters_select_member on public.document_counters for select to authenticated using (app.is_member(tenant_id));
 create policy audit_log_select_privileged on public.audit_log for select to authenticated using (app.has_role(tenant_id, array['owner', 'accountant']::public.membership_role[]));
 create policy tenant_secret_refs_select_owner on public.tenant_secret_refs for select to authenticated using (app.has_role(tenant_id, array['owner']::public.membership_role[]));
 
 revoke all on all tables in schema public from anon, authenticated;
-grant select on public.tenants, public.memberships, public.accounts, public.journal_entries, public.journal_lines, public.audit_log, public.tenant_secret_refs to authenticated;
+grant select on public.tenants, public.memberships, public.accounts, public.journal_entries, public.journal_lines, public.document_counters, public.audit_log, public.tenant_secret_refs to authenticated;
 
 revoke all on all functions in schema app from public, anon, authenticated;
 revoke all on all functions in schema public from public, anon, authenticated;
@@ -549,3 +550,395 @@ revoke all on function public.set_lock_date(uuid, date) from public, anon;
 grant execute on function public.bootstrap_tenant(text, text) to authenticated;
 grant execute on function public.manage_membership(uuid, uuid, public.membership_role, boolean) to authenticated;
 grant execute on function public.set_lock_date(uuid, date) to authenticated;
+
+create or replace function app.next_document_number(
+  p_tenant_id uuid,
+  p_doc_type text,
+  p_year integer,
+  p_actor_id uuid
+)
+returns bigint
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_next bigint;
+begin
+  insert into public.document_counters (tenant_id, doc_type, year, last_no, created_by)
+  values (p_tenant_id, p_doc_type, p_year, 0, p_actor_id)
+  on conflict (tenant_id, doc_type, year) do nothing;
+
+  select last_no + 1 into v_next
+  from public.document_counters
+  where tenant_id = p_tenant_id and doc_type = p_doc_type and year = p_year
+  for update;
+
+  update public.document_counters
+  set last_no = v_next
+  where tenant_id = p_tenant_id and doc_type = p_doc_type and year = p_year;
+  return v_next;
+end;
+$$;
+
+create or replace function app.create_journal_entry(
+  p_tenant_id uuid,
+  p_request_id uuid,
+  p_entry_date date,
+  p_source_type text,
+  p_source_id uuid,
+  p_description text,
+  p_lines jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_status public.tenant_status;
+  v_lock_date date;
+  v_entry_id uuid;
+  v_entry_no bigint;
+  v_line jsonb;
+  v_account_id uuid;
+  v_debit bigint;
+  v_credit bigint;
+  v_total_debit numeric := 0;
+  v_total_credit numeric := 0;
+  v_line_count integer;
+  v_payload_hash text;
+  v_existing_result jsonb;
+  v_existing_hash text;
+begin
+  if v_actor is null then
+    raise exception using errcode = '42501', message = 'authentication required';
+  end if;
+  if p_entry_date is null or p_source_id is null or p_request_id is null
+     or btrim(coalesce(p_source_type, '')) = '' or btrim(coalesce(p_description, '')) = '' then
+    raise exception using errcode = '23514', message = 'journal header is incomplete';
+  end if;
+
+  -- Compute canonical payload hash for idempotency
+  v_payload_hash := encode(sha256(convert_to(
+    p_entry_date::text || '|' || p_source_type || '|' || p_source_id::text || '|' || p_description || '|' || p_lines::text,
+    'UTF8'
+  )), 'hex');
+
+  -- Check for existing completed request
+  select result, payload_hash into v_existing_result, v_existing_hash
+  from public.posting_requests
+  where tenant_id = p_tenant_id and request_id = p_request_id and status = 'completed';
+
+  if found then
+    if v_existing_hash = v_payload_hash then
+      return v_existing_result;
+    else
+      raise exception using errcode = '23514', message = 'request_id reuse with different payload';
+    end if;
+  end if;
+
+  select status, lock_date into v_status, v_lock_date
+  from public.tenants where id = p_tenant_id for update;
+  if not found then
+    raise exception using errcode = '23514', message = 'tenant does not exist';
+  end if;
+  if v_status = 'suspended' then
+    raise exception using errcode = '55000', message = 'tenant is suspended';
+  end if;
+  if v_lock_date is not null and p_entry_date <= v_lock_date then
+    raise exception using errcode = '55000', message = 'journal date is locked';
+  end if;
+
+  if jsonb_typeof(p_lines) <> 'array' then
+    raise exception using errcode = '23514', message = 'journal lines must be an array';
+  end if;
+  v_line_count := jsonb_array_length(p_lines);
+  if v_line_count < 2 then
+    raise exception using errcode = '23514', message = 'journal entry must contain at least two lines';
+  end if;
+
+  for v_line in select value from jsonb_array_elements(p_lines)
+  loop
+    if jsonb_typeof(v_line) <> 'object'
+       or jsonb_typeof(v_line->'account_id') <> 'string'
+       or jsonb_typeof(v_line->'debit') <> 'string'
+       or jsonb_typeof(v_line->'credit') <> 'string' then
+      raise exception using errcode = '23514', message = 'journal line identifiers and money must be strings';
+    end if;
+    v_account_id := (v_line->>'account_id')::uuid;
+    v_debit := (v_line->>'debit')::bigint;
+    v_credit := (v_line->>'credit')::bigint;
+    if v_debit < 0 or v_credit < 0
+       or not ((v_debit > 0 and v_credit = 0) or (v_credit > 0 and v_debit = 0)) then
+      raise exception using errcode = '23514', message = 'each journal line must have exactly one positive side';
+    end if;
+    if not exists (
+      select 1 from public.accounts a
+      where a.id = v_account_id and a.tenant_id = p_tenant_id and a.is_active and not a.is_header
+    ) then
+      raise exception using errcode = '23514', message = 'journal account is invalid for this tenant';
+    end if;
+    v_total_debit := v_total_debit + v_debit;
+    v_total_credit := v_total_credit + v_credit;
+  end loop;
+
+  if v_total_debit <> v_total_credit then
+    raise exception using errcode = '23514', message = 'journal entry must balance';
+  end if;
+
+  v_entry_no := app.next_document_number(p_tenant_id, 'journal_entry', extract(year from p_entry_date)::integer, v_actor);
+  insert into public.journal_entries (
+    tenant_id, entry_no, entry_date, source_type, source_id, description, request_id, created_by
+  ) values (
+    p_tenant_id, v_entry_no, p_entry_date, p_source_type, p_source_id, p_description, p_request_id, v_actor
+  ) returning id into v_entry_id;
+
+  set constraints check_journal_entry_balanced deferred;
+  for v_line in select value from jsonb_array_elements(p_lines)
+  loop
+    insert into public.journal_lines (
+      tenant_id, entry_id, account_id, debit, credit,
+      customer_id, supplier_id, partner_id, contract_id, product_id, category_id, cash_account_id, user_id,
+      memo, created_by
+    ) values (
+      p_tenant_id,
+      v_entry_id,
+      (v_line->>'account_id')::uuid,
+      (v_line->>'debit')::bigint,
+      (v_line->>'credit')::bigint,
+      nullif(v_line->>'customer_id', '')::uuid,
+      nullif(v_line->>'supplier_id', '')::uuid,
+      nullif(v_line->>'partner_id', '')::uuid,
+      nullif(v_line->>'contract_id', '')::uuid,
+      nullif(v_line->>'product_id', '')::uuid,
+      nullif(v_line->>'category_id', '')::uuid,
+      nullif(v_line->>'cash_account_id', '')::uuid,
+      nullif(v_line->>'user_id', '')::uuid,
+      nullif(v_line->>'memo', ''),
+      v_actor
+    );
+  end loop;
+  set constraints check_journal_entry_balanced immediate;
+
+  -- Build result and store for idempotency
+  v_existing_result := jsonb_build_object(
+    'entry_id', v_entry_id::text,
+    'entry_no', v_entry_no::text,
+    'entry_date', p_entry_date::text,
+    'total_debit', v_total_debit::text,
+    'total_credit', v_total_credit::text
+  );
+
+  insert into public.posting_requests (
+    tenant_id, request_id, rpc_name, payload_hash, status, result, created_by, completed_at
+  ) values (
+    p_tenant_id, p_request_id, 'create_journal_entry', v_payload_hash, 'completed', v_existing_result, v_actor, now()
+  );
+
+  return v_existing_result;
+end;
+$$;
+
+create or replace function app.reverse_journal_entry(
+  p_tenant_id uuid,
+  p_request_id uuid,
+  p_original_entry_id uuid,
+  p_reversal_date date,
+  p_reason text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_status public.tenant_status;
+  v_lock_date date;
+  v_original_entry record;
+  v_reversal_id uuid;
+  v_reversal_no bigint;
+  v_total_debit numeric := 0;
+  v_total_credit numeric := 0;
+  v_payload_hash text;
+  v_existing_result jsonb;
+  v_existing_hash text;
+  v_line record;
+begin
+  if v_actor is null then
+    raise exception using errcode = '42501', message = 'authentication required';
+  end if;
+  if p_request_id is null or p_original_entry_id is null or p_reversal_date is null
+     or btrim(coalesce(p_reason, '')) = '' then
+    raise exception using errcode = '23514', message = 'reversal request is incomplete';
+  end if;
+
+  -- Compute payload hash for idempotency
+  v_payload_hash := encode(sha256(convert_to(
+    p_original_entry_id::text || '|' || p_reversal_date::text || '|' || p_reason,
+    'UTF8'
+  )), 'hex');
+
+  -- Check for existing completed request
+  select result, payload_hash into v_existing_result, v_existing_hash
+  from public.posting_requests
+  where tenant_id = p_tenant_id and request_id = p_request_id and status = 'completed';
+
+  if found then
+    if v_existing_hash = v_payload_hash then
+      return v_existing_result;
+    else
+      raise exception using errcode = '23514', message = 'request_id reuse with different payload';
+    end if;
+  end if;
+
+  -- Lock tenant and check constraints
+  select status, lock_date into v_status, v_lock_date
+  from public.tenants where id = p_tenant_id for update;
+  if not found then
+    raise exception using errcode = '23514', message = 'tenant does not exist';
+  end if;
+  if v_status = 'suspended' then
+    raise exception using errcode = '55000', message = 'tenant is suspended';
+  end if;
+  if v_lock_date is not null and p_reversal_date <= v_lock_date then
+    raise exception using errcode = '55000', message = 'reversal date is locked';
+  end if;
+
+  -- Lock and validate original entry
+  select id, tenant_id, entry_no, entry_date, source_type, source_id, description, reverses_entry_id, reversed_by_entry_id
+  into v_original_entry
+  from public.journal_entries
+  where id = p_original_entry_id and tenant_id = p_tenant_id
+  for update;
+
+  if not found then
+    raise exception using errcode = '23514', message = 'original entry not found in tenant';
+  end if;
+  if v_original_entry.reversed_by_entry_id is not null then
+    raise exception using errcode = '23514', message = 'entry is already reversed';
+  end if;
+  if v_original_entry.reverses_entry_id is not null then
+    raise exception using errcode = '23514', message = 'cannot reverse a reversal';
+  end if;
+
+  -- Create reversal entry
+  v_reversal_no := app.next_document_number(p_tenant_id, 'journal_entry', extract(year from p_reversal_date)::integer, v_actor);
+  insert into public.journal_entries (
+    tenant_id, entry_no, entry_date, source_type, source_id, description, reverses_entry_id, request_id, created_by
+  ) values (
+    p_tenant_id, v_reversal_no, p_reversal_date,
+    'reversal', v_original_entry.source_id,
+    'Reversal: ' || p_reason,
+    p_original_entry_id, p_request_id, v_actor
+  ) returning id into v_reversal_id;
+
+  -- Link original to reversal
+  perform set_config('app.allow_reversal_link', 'on', true);
+  update public.journal_entries
+  set reversed_by_entry_id = v_reversal_id
+  where id = p_original_entry_id;
+  perform set_config('app.allow_reversal_link', 'off', true);
+
+  -- Mirror lines with swapped debit/credit
+  set constraints check_journal_entry_balanced deferred;
+  for v_line in
+    select account_id, debit, credit, customer_id, supplier_id, partner_id, contract_id, product_id, category_id, cash_account_id, user_id, memo
+    from public.journal_lines
+    where entry_id = p_original_entry_id
+  loop
+    insert into public.journal_lines (
+      tenant_id, entry_id, account_id, debit, credit,
+      customer_id, supplier_id, partner_id, contract_id, product_id, category_id, cash_account_id, user_id,
+      memo, created_by
+    ) values (
+      p_tenant_id, v_reversal_id, v_line.account_id,
+      v_line.credit,  -- swap: original credit becomes reversal debit
+      v_line.debit,   -- swap: original debit becomes reversal credit
+      v_line.customer_id, v_line.supplier_id, v_line.partner_id, v_line.contract_id,
+      v_line.product_id, v_line.category_id, v_line.cash_account_id, v_line.user_id,
+      v_line.memo, v_actor
+    );
+    v_total_debit := v_total_debit + v_line.credit;
+    v_total_credit := v_total_credit + v_line.debit;
+  end loop;
+  set constraints check_journal_entry_balanced immediate;
+
+  -- Audit the reversal
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, request_id, before_data, after_data)
+  values (p_tenant_id, v_actor, 'journal.reversal', 'journal_entry', v_reversal_id, p_request_id,
+          jsonb_build_object('original_entry_id', p_original_entry_id::text),
+          jsonb_build_object('reason', p_reason));
+
+  -- Build and store result
+  v_existing_result := jsonb_build_object(
+    'entry_id', v_reversal_id::text,
+    'entry_no', v_reversal_no::text,
+    'entry_date', p_reversal_date::text,
+    'original_entry_id', p_original_entry_id::text,
+    'total_debit', v_total_debit::text,
+    'total_credit', v_total_credit::text
+  );
+
+  insert into public.posting_requests (
+    tenant_id, request_id, rpc_name, payload_hash, status, result, created_by, completed_at
+  ) values (
+    p_tenant_id, p_request_id, 'reverse_journal_entry', v_payload_hash, 'completed', v_existing_result, v_actor, now()
+  );
+
+  return v_existing_result;
+end;
+$$;
+
+create or replace function public.manage_tenant_secret_ref(
+  p_tenant_id uuid,
+  p_kind public.secret_kind,
+  p_vault_secret_id uuid
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid;
+  v_ref_id uuid;
+  v_before jsonb;
+begin
+  v_actor := app.require_owner_writable(p_tenant_id);
+
+  -- Get existing reference if any
+  select to_jsonb(r), r.id into v_before, v_ref_id
+  from public.tenant_secret_refs r
+  where r.tenant_id = p_tenant_id and r.kind = p_kind
+  for update;
+
+  if v_ref_id is not null then
+    -- Update existing
+    update public.tenant_secret_refs
+    set vault_secret_id = p_vault_secret_id
+    where id = v_ref_id;
+  else
+    -- Insert new
+    insert into public.tenant_secret_refs (tenant_id, kind, vault_secret_id, created_by)
+    values (p_tenant_id, p_kind, p_vault_secret_id, v_actor)
+    returning id into v_ref_id;
+  end if;
+
+  -- Audit without exposing actual secret ID
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, before_data, after_data)
+  values (p_tenant_id, v_actor, 'secret_ref.upsert', 'tenant_secret_ref', v_ref_id,
+          case when v_before is not null then jsonb_build_object('kind', p_kind::text) else null end,
+          jsonb_build_object('kind', p_kind::text));
+
+  return v_ref_id;
+end;
+$$;
+
+revoke all on function app.next_document_number(uuid, text, integer, uuid) from public, anon, authenticated;
+revoke all on function app.create_journal_entry(uuid, uuid, date, text, uuid, text, jsonb) from public, anon, authenticated;
+revoke all on function app.reverse_journal_entry(uuid, uuid, uuid, date, text) from public, anon, authenticated;
+revoke all on function public.manage_tenant_secret_ref(uuid, public.secret_kind, uuid) from public, anon;
+grant execute on function public.manage_tenant_secret_ref(uuid, public.secret_kind, uuid) to authenticated;
