@@ -1,6 +1,6 @@
 # Changelog
 
-## B1 — Tenancy & Ledger Core (branch `002-b1-tenancy-ledger`, awaiting founder review)
+## B1 — Tenancy & Ledger Core (merged to `main`)
 
 Delivered:
 
