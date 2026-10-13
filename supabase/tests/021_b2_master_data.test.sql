@@ -2,7 +2,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 \ir helpers/b1.inc
 
-select plan(19);
+select plan(21);
 
 -- Setup users
 select tests.create_user('80000000-0000-0000-0000-000000000001', 'b2-owner@example.com');
@@ -12,6 +12,16 @@ select tests.create_user('80000000-0000-0000-0000-000000000003', 'b2-cashier@exa
 -- Bootstrap tenant
 select tests.authenticate_as('80000000-0000-0000-0000-000000000001');
 select lives_ok($$ select public.bootstrap_tenant('b2-test', 'B2 Test Tenant') $$, 'tenant bootstraps');
+
+-- Verify bootstrap seeds categories and brands
+select ok(
+  (select count(*)::int from public.categories where tenant_id = (select id from public.tenants where slug = 'b2-test')) >= 6,
+  'bootstrap seeds default categories'
+);
+select ok(
+  (select count(*)::int from public.brands where tenant_id = (select id from public.tenants where slug = 'b2-test')) >= 12,
+  'bootstrap seeds default brands'
+);
 
 -- Add manager and cashier
 select lives_ok(
@@ -23,16 +33,16 @@ select lives_ok(
   'cashier added'
 );
 
--- Categories
+-- Categories (use unique names since bootstrap already seeds defaults)
 select lives_ok(
-  $$ select public.manage_category((select id from public.tenants where slug = 'b2-test'), null, 'ثلاجات', 'Refrigerators', 1, true) $$,
+  $$ select public.manage_category((select id from public.tenants where slug = 'b2-test'), null, 'أجهزة منزلية', 'Home Appliances', 10, true) $$,
   'owner creates category'
 );
 
 select tests.reset_authentication();
 select tests.authenticate_as('80000000-0000-0000-0000-000000000002');
 select lives_ok(
-  $$ select public.manage_category((select id from public.tenants where slug = 'b2-test'), null, 'غسالات', 'Washing Machines', 2, true) $$,
+  $$ select public.manage_category((select id from public.tenants where slug = 'b2-test'), null, 'إلكترونيات', 'Electronics', 11, true) $$,
   'manager creates category'
 );
 
@@ -45,23 +55,23 @@ select throws_ok(
   'cashier cannot create category'
 );
 
--- Brands
+-- Brands (use unique name since bootstrap already seeds defaults)
 select tests.reset_authentication();
 select tests.authenticate_as('80000000-0000-0000-0000-000000000001');
 select lives_ok(
-  $$ select public.manage_brand((select id from public.tenants where slug = 'b2-test'), null, 'Sharp', null, true) $$,
+  $$ select public.manage_brand((select id from public.tenants where slug = 'b2-test'), null, 'Bosch', null, true) $$,
   'owner creates brand'
 );
 
--- Products
+-- Products (use seeded category/brand)
 select lives_ok(
   $$ select public.manage_product(
     (select id from public.tenants where slug = 'b2-test'),
     null,
     'ثلاجة شارب 18 قدم',
     'Sharp 18ft Refrigerator',
-    (select id from public.categories where tenant_id = (select id from public.tenants where slug = 'b2-test') limit 1),
-    (select id from public.brands where tenant_id = (select id from public.tenants where slug = 'b2-test') limit 1),
+    (select id from public.categories where tenant_id = (select id from public.tenants where slug = 'b2-test') and name_ar = 'ثلاجات'),
+    (select id from public.brands where tenant_id = (select id from public.tenants where slug = 'b2-test') and name = 'Sharp'),
     'SJ-48',
     '123456789',
     'serial',

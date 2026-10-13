@@ -995,8 +995,9 @@ begin
     raise exception using errcode = '42501', message = 'view permission denied';
   end if;
 
-  -- In production, this would call storage.create_signed_url()
-  -- For now, return a placeholder that the Edge Function would generate
+  -- TODO(B3+): Replace with actual storage.create_signed_url() call
+  -- This requires: 1) Storage buckets created, 2) Service role or Edge Function
+  -- The placeholder allows testing permission checks and audit logging now
   v_signed_url := 'signed://' || v_attachment.bucket || '/' || v_attachment.object_path || '?expires=300';
 
   -- Audit the view
@@ -1081,3 +1082,34 @@ $$;
 
 revoke all on function app.seed_categories(uuid, uuid) from public, anon, authenticated;
 revoke all on function app.seed_brands(uuid, uuid) from public, anon, authenticated;
+
+-- Update bootstrap_tenant to seed categories and brands
+create or replace function app.bootstrap_tenant(p_slug text, p_name text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_tenant_id uuid;
+begin
+  if v_actor is null then
+    raise exception using errcode = '42501', message = 'authentication required';
+  end if;
+  insert into public.tenants (slug, name, created_by)
+  values (lower(btrim(p_slug)), btrim(p_name), v_actor)
+  returning id into v_tenant_id;
+
+  insert into public.memberships (tenant_id, user_id, role, is_active, created_by)
+  values (v_tenant_id, v_actor, 'owner', true, v_actor);
+
+  perform app.seed_chart(v_tenant_id, v_actor);
+  perform app.seed_categories(v_tenant_id, v_actor);
+  perform app.seed_brands(v_tenant_id, v_actor);
+
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, after_data)
+  values (v_tenant_id, v_actor, 'tenant.bootstrap', 'tenant', v_tenant_id, jsonb_build_object('slug', lower(btrim(p_slug)), 'name', btrim(p_name)));
+  return v_tenant_id;
+end;
+$$;
