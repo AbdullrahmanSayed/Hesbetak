@@ -49,7 +49,7 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 - [X] T013 Create one forward-only migration `supabase/migrations/<timestamp>_b1_tenancy_ledger_core.sql` with required extensions, `app` schema, B1 enums, table skeletons, checks, FKs, tenant-first indexes, default privilege revocations, RLS enablement, and no B2+ tables
 - [X] T014 Implement immutable audit/journal guard triggers and deferred journal balance/line-count constraint trigger in the B1 migration; keep journal lines permanently immutable
 - [X] T015 Implement fixed-context `app.current_user_id`, `app.is_member`, `app.has_role`, tenant-state, same-tenant account, audit sanitization, and balance assertion helpers in the B1 migration with no browser grants
-- [ ] T016 Run schema/security pgTAP and `npx supabase db reset`; confirm migration applies from zero and T010–T011 pass before story work
+- [X] T016 Run schema/security pgTAP and `npx supabase db reset`; confirm migration applies from zero and T010–T011 pass before story work
 
 **Checkpoint**: Shared schema, grants, RLS foundations, and deferred ledger invariant exist.
 
@@ -63,17 +63,17 @@ description: "Task list for B1 — Tenancy & Ledger Core"
 
 ### Tests first
 
-- [ ] T017 [P] [US1] Add failing bootstrap and exact Section 7.1 chart seed assertions, including no B2 defaults and system-key/code/hierarchy checks, in `supabase/tests/004_b1_bootstrap.test.sql`
-- [ ] T018 [P] [US1] Add failing progressive T19 RLS matrix for `tenants`, `memberships`, and `accounts` across owner/manager/cashier/collector/accountant/non-member/inactive/cross-tenant/suspended contexts in `supabase/tests/005_b1_tenancy_rls.test.sql`
-- [ ] T019 [P] [US1] Add failing owner membership-management, final-owner protection, lock-date-management, and sanitized audit assertions in `supabase/tests/006_b1_management.test.sql`
-- [ ] T020 [US1] Run T017–T019 and confirm expected missing-function/policy failures
+- [X] T017 [P] [US1] Add failing bootstrap and exact Section 7.1 chart seed assertions, including no B2 defaults and system-key/code/hierarchy checks, in `supabase/tests/004_b1_bootstrap.test.sql`
+- [X] T018 [P] [US1] Add failing progressive T19 RLS matrix for `tenants`, `memberships`, and `accounts` across owner/manager/cashier/collector/accountant/non-member/inactive/cross-tenant/suspended contexts in `supabase/tests/005_b1_tenancy_rls.test.sql`
+- [X] T019 [P] [US1] Add failing owner membership-management, final-owner protection, lock-date-management, and sanitized audit assertions in `supabase/tests/006_b1_management.test.sql`
+- [X] T020 [US1] Run T017–T019 and confirm expected missing-function/policy failures
 
 ### Implementation
 
-- [ ] T021 [US1] Implement atomic public tenant bootstrap wrapper plus internal `app.bootstrap_tenant` in the B1 migration, seeding only tenant, owner membership, and the complete chart exactly once
-- [ ] T022 [US1] Implement minimal table SELECT policies, explicit grants, active membership helpers, tenant suspension write checks, and cross-tenant ownership validation for US1 objects
-- [ ] T023 [US1] Implement owner-only membership and lock-date operations with tenant row locks, final-active-owner protection, and immutable sanitized audit rows
-- [ ] T024 [US1] Run `npm run test:db`; confirm T017–T019 and all prior tests pass
+- [X] T021 [US1] Implement atomic public tenant bootstrap wrapper plus internal `app.bootstrap_tenant` in the B1 migration, seeding only tenant, owner membership, and the complete chart exactly once
+- [X] T022 [US1] Implement minimal table SELECT policies, explicit grants, active membership helpers, tenant suspension write checks, and cross-tenant ownership validation for US1 objects
+- [X] T023 [US1] Implement owner-only membership and lock-date operations with tenant row locks, final-active-owner protection, and immutable sanitized audit rows
+- [X] T024 [US1] Run `npm run test:db`; confirm T017–T019 and all prior tests pass
 
 **Checkpoint**: US1 independently bootstraps and isolates two tenants with exact chart data.
 

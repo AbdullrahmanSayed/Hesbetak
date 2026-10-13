@@ -364,3 +364,188 @@ revoke all on all functions in schema public from public, anon, authenticated;
 grant usage on schema app to authenticated;
 grant execute on function app.is_member(uuid) to authenticated;
 grant execute on function app.has_role(uuid, public.membership_role[]) to authenticated;
+
+create or replace function app.seed_chart(p_tenant_id uuid, p_actor_id uuid)
+returns void
+language sql
+security definer
+set search_path = public, pg_temp
+as $$
+  with seed(code, name_ar, name_en, account_kind, side, parent_code, system_key, is_header) as (
+    values
+      ('1100','النقدية وما في حكمها','Cash & equivalents','asset','debit',null,null,true),
+      ('1110','الخزنة الرئيسية','Main cash box','asset','debit','1100','cash_main',false),
+      ('1210','أقساط مستحقة على العملاء','Installment receivable','asset','debit',null,'installment_receivable',false),
+      ('1215','فرق آجل غير محقق','Unearned deferred margin','asset','credit',null,'unearned_margin',false),
+      ('1300','المخزون','Inventory','asset','debit',null,null,true),
+      ('1310','مخزون بضاعة جديدة','Inventory — new','asset','debit','1300','inventory_new',false),
+      ('1320','مخزون بضاعة مستعملة','Inventory — used/trade-in','asset','debit','1300','inventory_used',false),
+      ('1400','دفعات مقدمة للموردين','Supplier advances','asset','debit',null,'supplier_advances',false),
+      ('1500','أصول ثابتة','Fixed assets','asset','debit',null,'fixed_assets',false),
+      ('2100','الموردون','Accounts payable — suppliers','liability','credit',null,'accounts_payable',false),
+      ('2200','مستحق لعملاء (استبدال)','Payable to customers','liability','credit',null,'payable_customers',false),
+      ('2300','أرصدة دائنة للعملاء','Customer credit balances','liability','credit',null,'customer_credit',false),
+      ('3100','رأس مال الشركاء','Partners capital','equity','credit',null,'partner_capital',false),
+      ('3200','جاري الشركاء','Partners current','equity','credit',null,'partner_current',false),
+      ('3300','مسحوبات الشركاء','Partners drawings','equity','debit',null,'partner_drawings',false),
+      ('3900','أرباح مرحلة','Retained earnings','equity','credit',null,'retained_earnings',false),
+      ('3999','أرصدة افتتاحية','Opening balance equity','equity','credit',null,'opening_equity',false),
+      ('4100','المبيعات','Sales revenue','revenue','credit',null,'sales',false),
+      ('4150','مردودات المبيعات','Sales returns','revenue','debit',null,'sales_returns',false),
+      ('4160','خصم مسموح به','Sales discounts','revenue','debit',null,'sales_discounts',false),
+      ('4200','أرباح الآجل المحققة','Earned deferred margin','revenue','credit',null,'earned_margin',false),
+      ('4300','غرامات تأخير','Late fees','revenue','credit',null,'late_fees',false),
+      ('4900','إيرادات أخرى','Other income','revenue','credit',null,'other_income',false),
+      ('5100','تكلفة البضاعة المباعة','Cost of goods sold','expense','debit',null,'cogs',false),
+      ('5200','فروقات مخزون','Inventory adjustments','expense','debit',null,'inventory_adjustments',false),
+      ('6100','إيجار','Rent','expense','debit',null,null,false),
+      ('6200','مرتبات','Salaries','expense','debit',null,null,false),
+      ('6300','كهرباء ومياه','Utilities','expense','debit',null,null,false),
+      ('6400','نقل وتوصيل','Transport & delivery','expense','debit',null,null,false),
+      ('6500','دعاية وإعلان','Marketing','expense','debit',null,null,false),
+      ('6600','ديون معدومة','Bad debt expense','expense','debit',null,'bad_debt',false),
+      ('6900','مصروفات متنوعة','Miscellaneous','expense','debit',null,'misc_expense',false),
+      ('6950','خسائر فسخ عقود','Contract cancellation losses','expense','debit',null,'cancellation_loss',false)
+  ), inserted_roots as (
+    insert into public.accounts (tenant_id, code, name_ar, name_en, type, normal_side, system_key, is_header, created_by)
+    select p_tenant_id, code, name_ar, name_en, account_kind::public.account_type, side::public.normal_side, system_key, is_header, p_actor_id
+    from seed where parent_code is null
+    returning id, code
+  )
+  insert into public.accounts (tenant_id, code, name_ar, name_en, type, normal_side, parent_id, system_key, is_header, created_by)
+  select p_tenant_id, s.code, s.name_ar, s.name_en, s.account_kind::public.account_type, s.side::public.normal_side,
+         r.id, s.system_key, s.is_header, p_actor_id
+  from seed s
+  join inserted_roots r on r.code = s.parent_code;
+$$;
+
+create or replace function app.bootstrap_tenant(p_slug text, p_name text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_tenant_id uuid;
+begin
+  if v_actor is null then
+    raise exception using errcode = '42501', message = 'authentication required';
+  end if;
+  insert into public.tenants (slug, name, created_by)
+  values (lower(btrim(p_slug)), btrim(p_name), v_actor)
+  returning id into v_tenant_id;
+
+  insert into public.memberships (tenant_id, user_id, role, is_active, created_by)
+  values (v_tenant_id, v_actor, 'owner', true, v_actor);
+
+  perform app.seed_chart(v_tenant_id, v_actor);
+
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, after_data)
+  values (v_tenant_id, v_actor, 'tenant.bootstrap', 'tenant', v_tenant_id, jsonb_build_object('slug', lower(btrim(p_slug)), 'name', btrim(p_name)));
+  return v_tenant_id;
+end;
+$$;
+
+create or replace function public.bootstrap_tenant(p_slug text, p_name text)
+returns uuid
+language sql
+security definer
+set search_path = public, pg_temp
+as $$ select app.bootstrap_tenant(p_slug, p_name) $$;
+
+create or replace function app.require_owner_writable(p_tenant_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_status public.tenant_status;
+begin
+  if v_actor is null or not app.has_role(p_tenant_id, array['owner']::public.membership_role[]) then
+    raise exception using errcode = '42501', message = 'owner role required';
+  end if;
+  select status into v_status from public.tenants where id = p_tenant_id for update;
+  if not found then
+    raise exception using errcode = '42501', message = 'tenant not accessible';
+  end if;
+  if v_status = 'suspended' then
+    raise exception using errcode = '55000', message = 'tenant is suspended';
+  end if;
+  return v_actor;
+end;
+$$;
+
+create or replace function public.manage_membership(
+  p_tenant_id uuid,
+  p_user_id uuid,
+  p_role public.membership_role,
+  p_is_active boolean
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid;
+  v_membership_id uuid;
+  v_before jsonb;
+begin
+  v_actor := app.require_owner_writable(p_tenant_id);
+  select to_jsonb(m), m.id into v_before, v_membership_id
+  from public.memberships m where m.tenant_id = p_tenant_id and m.user_id = p_user_id for update;
+
+  if v_membership_id is not null
+     and coalesce(v_before->>'role', '') = 'owner'
+     and (not p_is_active or p_role <> 'owner')
+     and not exists (
+       select 1 from public.memberships m
+       where m.tenant_id = p_tenant_id and m.role = 'owner' and m.is_active and m.user_id <> p_user_id
+     ) then
+    raise exception using errcode = '23514', message = 'tenant must retain an active owner';
+  end if;
+
+  insert into public.memberships (tenant_id, user_id, role, is_active, created_by)
+  values (p_tenant_id, p_user_id, p_role, p_is_active, v_actor)
+  on conflict (tenant_id, user_id) do update set role = excluded.role, is_active = excluded.is_active
+  returning id into v_membership_id;
+
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, before_data, after_data)
+  select p_tenant_id, v_actor, 'membership.upsert', 'membership', v_membership_id, v_before,
+         jsonb_build_object('user_id', p_user_id, 'role', p_role, 'is_active', p_is_active);
+  return v_membership_id;
+end;
+$$;
+
+create or replace function public.set_lock_date(p_tenant_id uuid, p_lock_date date)
+returns date
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_actor uuid;
+  v_before date;
+begin
+  v_actor := app.require_owner_writable(p_tenant_id);
+  select lock_date into v_before from public.tenants where id = p_tenant_id;
+  update public.tenants set lock_date = p_lock_date where id = p_tenant_id;
+  insert into public.audit_log (tenant_id, actor_id, action, target_type, target_id, before_data, after_data)
+  values (p_tenant_id, v_actor, 'tenant.lock_date', 'tenant', p_tenant_id,
+          jsonb_build_object('lock_date', v_before), jsonb_build_object('lock_date', p_lock_date));
+  return p_lock_date;
+end;
+$$;
+
+revoke all on function app.seed_chart(uuid, uuid) from public, anon, authenticated;
+revoke all on function app.bootstrap_tenant(text, text) from public, anon, authenticated;
+revoke all on function app.require_owner_writable(uuid) from public, anon, authenticated;
+revoke all on function public.bootstrap_tenant(text, text) from public, anon;
+revoke all on function public.manage_membership(uuid, uuid, public.membership_role, boolean) from public, anon;
+revoke all on function public.set_lock_date(uuid, date) from public, anon;
+grant execute on function public.bootstrap_tenant(text, text) to authenticated;
+grant execute on function public.manage_membership(uuid, uuid, public.membership_role, boolean) to authenticated;
+grant execute on function public.set_lock_date(uuid, date) to authenticated;

@@ -1,4 +1,4 @@
--- Shared B1 pgTAP helpers. Include inside a test transaction with \ir helpers/b1.sql.
+-- Shared B1 pgTAP helpers. Include inside a test transaction with \ir helpers/b1.inc.
 create schema if not exists tests;
 
 create or replace function tests.create_user(p_user_id uuid, p_email text)
@@ -13,7 +13,7 @@ as $$
     role,
     email,
     encrypted_password,
-    email_confirmed_at,
+    confirmed_at,
     raw_app_meta_data,
     raw_user_meta_data,
     created_at,
@@ -66,6 +66,7 @@ $$;
 create or replace function tests.reset_authentication()
 returns void
 language plpgsql
+security invoker
 set search_path = public, pg_temp
 as $$
 begin
@@ -75,3 +76,6 @@ begin
   perform set_config('request.jwt.claims', '{}', true);
 end;
 $$;
+
+grant usage on schema tests to authenticated, service_role;
+grant execute on all functions in schema tests to authenticated, service_role;
