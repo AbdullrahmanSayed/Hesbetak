@@ -1,6 +1,28 @@
 # Changelog
 
-## B2 — Master Data & Attachments (branch `003-b2-master-data-attachments`, awaiting review)
+## B3 — Purchases & Inventory (branch `004-b3-purchases-inventory`, awaiting review)
+
+Delivered:
+
+- Inventory tracking: `inventory_units` (serial tracking with specific identification costing),
+  `stock_balances` (quantity tracking with moving weighted average), `stock_movements` (audit trail).
+- Purchase documents: `purchase_invoices` with line items, `supplier_payments`.
+- Inventory adjustments: `inventory_adjustments` with positive/negative qty changes.
+- Three enums: `unit_condition` (new/used/open_box), `unit_status` (in_stock/sold/returned_to_supplier/written_off),
+  `movement_type` (purchase/sale/return_in/return_out/adjustment/opening).
+- Posting RPCs: `post_purchase_invoice` (creates inventory units or updates stock_balance, creates journal entry),
+  `post_supplier_payment` (Dr Payable, Cr Cash), `post_inventory_adjustment` (Dr/Cr Inventory vs Adjustment expense).
+- Helper functions: `app.calc_weighted_avg` for moving average, `app.update_stock_balance`, `app.get_inventory_account_id`.
+- Full RLS on all 7 new tables, tenant isolation enforced.
+- Security: revoked PUBLIC execute from app helper functions.
+- Tests: 22 schema tests, 16 purchase tests, 12 inventory tests, 8 reconciliation tests (272 total pgTAP).
+
+Checks: typecheck ✓, lint ✓, unit ✓, pgTAP ✓ (272 total).
+
+Deferred to B4+: `purchase_returns` (purchase return flow), sales invoices, customer payments,
+installment contracts, trade-ins.
+
+## B2 — Master Data & Attachments (merged to `main`)
 
 Delivered:
 

@@ -10,6 +10,7 @@ const MIGRATIONS_DIR = path.resolve(process.cwd(), "supabase", "migrations");
 const EXPECTED_MIGRATIONS = [
   "20261012000000_b1_tenancy_ledger_core.sql",
   "20261013000000_b2_master_data_attachments.sql",
+  "20261014000000_b3_purchases_inventory.sql",
 ];
 
 describe("migrations guard", () => {
