@@ -40,13 +40,14 @@ select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n 
 select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = 'journal_entries'), false), 'journal_entries has RLS enabled');
 select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = 'journal_lines'), false), 'journal_lines has RLS enabled');
 
+-- B2 tables now exist, verify B3+ tables don't exist
 select is(
   (select count(*)::int from pg_tables where schemaname = 'public' and tablename in (
-    'categories', 'brands', 'products', 'customers', 'suppliers', 'partners', 'cash_accounts',
-    'expense_categories', 'installment_plan_templates', 'sales_invoices', 'purchase_invoices'
+    'inventory_units', 'stock_balances', 'stock_movements',
+    'sales_invoices', 'purchase_invoices', 'installment_contracts'
   )),
   0,
-  'no B2+ tables exist'
+  'no B3+ tables exist'
 );
 
 select is(
