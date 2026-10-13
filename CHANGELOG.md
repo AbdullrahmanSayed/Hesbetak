@@ -1,5 +1,25 @@
 # Changelog
 
+## B2 — Master Data & Attachments (branch `003-b2-master-data-attachments`, awaiting review)
+
+Delivered:
+
+- Master data tables: categories, brands, products, customers, suppliers, cash_accounts,
+  expense_categories, partners, plan_templates with full RLS and audit logging.
+- Unified attachment system: attachments table with owner_type/kind/status flow, role-based
+  view/upload permissions, signed URL generation with audit, supersede functionality.
+- Auto GL account creation: cash accounts create sub-accounts under 1100, expense categories
+  create accounts under 6xxx, partners create 3 accounts (capital/current/drawings).
+- Phone validation: Egyptian format `01[0125]XXXXXXXX`, national ID 14 digits.
+- Partner share validation: total cannot exceed 100% (10000 basis points).
+- Seeded defaults: categories (6), brands (12).
+- Tests: 54 new pgTAP assertions (T26-T30 attachment tests pass).
+
+Checks: typecheck ✓, lint ✓, unit ✓, pgTAP ✓ (212 total).
+
+Deferred to B3+: inventory units, stock movements, purchase/sales invoices, actual file upload
+Edge Function, storage bucket creation.
+
 ## B1 — Tenancy & Ledger Core (merged to `main`)
 
 Delivered:
