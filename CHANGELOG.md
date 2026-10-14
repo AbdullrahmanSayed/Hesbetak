@@ -1,6 +1,25 @@
 # Changelog
 
-## B4 — Cash Sales / POS (branch `005-b4-sales-contracts`)
+## B5 — Installment Sales (branch `006-b5-installment-sales`, in progress)
+
+Delivered so far:
+
+- Contract tables: `installment_contracts` with customer/guarantor snapshot, `installments` with
+  principal/margin split per Section 8.2.
+- Contract status enum: active, settled, early_settled, rescheduled, written_off, cancelled.
+- Installment status enum: pending, partially_paid, paid, frozen, written_off, cancelled.
+- `preview_installment_schedule` RPC: pure function for UI preview before posting.
+- `post_installment_sale` RPC: validates attachment requirements (T25), creates invoice, contract,
+  installments schedule, journal entries (Dr Receivable, Cr Sales, Cr Unearned Margin), and stock movements.
+- Invariant assertions: sum of principals = financed_base, sum of margins = margin_total.
+- TypeScript: Zod schemas (`src/schemas/installments.ts`), typed RPC wrappers (`src/lib/rpc/installments.ts`).
+- Tests: 97 pgTAP tests (schema 26, installment_sale 35 T03, awkward_vector 17 T23, attachment_required 19 T25).
+
+Checks: typecheck ✓, lint ✓, unit ✓ (210), pgTAP ✓ (97 B5 tests).
+
+Deferred to B6: Installment sale UI, contract print template, collections.
+
+## B4 — Cash Sales / POS (branch `005-b4-sales-contracts`, merged to `main`)
 
 Delivered:
 
