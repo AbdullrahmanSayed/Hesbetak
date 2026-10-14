@@ -1,6 +1,33 @@
 # Changelog
 
-## B3 — Purchases & Inventory (branch `004-b3-purchases-inventory`, awaiting review)
+## B4 — Cash Sales / POS (branch `005-b4-sales-contracts`)
+
+Delivered:
+
+- Sales documents: `sales_invoices` (cash/installment kind enum), `sales_invoice_lines` with cost snapshot,
+  `sales_payments` (split payments across multiple cash accounts), `sales_returns`, `sales_return_lines`.
+- Posting RPCs: `post_cash_sale` (inventory out, COGS, sales revenue, split payments),
+  `post_sales_return` (inventory back in, COGS reversal, refund).
+- Cost isolation: cashier cannot read cost data (purchase prices, COGS, unit costs). Safe views
+  (`pos_products`, `pos_inventory_units`, `pos_cash_accounts`, `sales_invoice_lines_no_cost`,
+  `sales_return_lines_no_cost`) expose only what POS needs.
+- Journal entries: full double-entry for cash sales (Dr Cash, Cr Sales, Dr COGS, Cr Inventory)
+  and returns (reversed).
+- Money helpers: `app.money_from_json` and `app.money_from_text` for safe decimal-string parsing in SQL.
+- Concurrency: advisory locks + row locks prevent double-selling serials and overselling quantities.
+- TypeScript: Zod schemas (`src/schemas/sales.ts`), typed RPC wrappers (`src/lib/rpc/sales.ts`),
+  POS cart logic (`src/lib/pos.ts`).
+- UI: Full POS page with product search (keyboard `/`), serial picker modal, cart with quantity/discount
+  editing, split payments, confirmation dialog, thermal receipt print component. Keyboard shortcuts
+  (`/` search, `Enter` add, `F9` post, `Esc` clear).
+- Tests: 116 pgTAP tests (schema 35, cash_sale 31, returns 21, security 25, concurrency 4),
+  210 unit tests, full typecheck and lint passing.
+
+Checks: typecheck ✓, lint ✓, unit ✓ (210), pgTAP ✓ (116 B4 + prior batches).
+
+Deferred to B5+: installment sales, collections, customer selection in POS, returns UI page.
+
+## B3 — Purchases & Inventory (branch `004-b3-purchases-inventory`, merged to `main`)
 
 Delivered:
 

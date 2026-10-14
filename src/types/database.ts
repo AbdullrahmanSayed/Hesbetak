@@ -239,6 +239,12 @@ isOneToOne: false
       foreignKeyName: "inventory_adjustment_lines_tenant_id_product_id_fkey"
       columns: ["tenant_id","product_id"]
 isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "inventory_adjustment_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
       referencedRelation: "products"
       referencedColumns: ["tenant_id","id"]
     },{
@@ -246,6 +252,12 @@ isOneToOne: false
       columns: ["tenant_id","unit_id"]
 isOneToOne: false
       referencedRelation: "inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "inventory_adjustment_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
       referencedColumns: ["tenant_id","id"]
     }
                   ]
@@ -285,6 +297,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "tenants"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventory_units_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
     },{
       foreignKeyName: "inventory_units_tenant_id_product_id_fkey"
       columns: ["tenant_id","product_id"]
@@ -507,6 +525,12 @@ isOneToOne: false
       foreignKeyName: "purchase_invoice_lines_tenant_id_product_id_fkey"
       columns: ["tenant_id","product_id"]
 isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "purchase_invoice_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
       referencedRelation: "products"
       referencedColumns: ["tenant_id","id"]
     }
@@ -529,6 +553,12 @@ isOneToOne: false
       referencedRelation: "cash_accounts"
       referencedColumns: ["tenant_id","id"]
     },{
+      foreignKeyName: "purchase_invoices_tenant_id_cash_account_id_fkey"
+      columns: ["tenant_id","cash_account_id"]
+isOneToOne: false
+      referencedRelation: "pos_cash_accounts"
+      referencedColumns: ["tenant_id","id"]
+    },{
       foreignKeyName: "purchase_invoices_tenant_id_fkey"
       columns: ["tenant_id"]
 isOneToOne: false
@@ -539,6 +569,209 @@ isOneToOne: false
       columns: ["tenant_id","supplier_id"]
 isOneToOne: false
       referencedRelation: "suppliers"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"sales_invoice_lines": {
+                  Row: {
+                    "cash_price": number,"cost_snapshot": number,"discount": number,"gross_amount": number,"id": string,"invoice_id": string,"line_no": number,"net_amount": number,"product_id": string,"qty": number,"tenant_id": string,"unit_id": string | null
+                  }
+                  Insert: {
+                    "cash_price": number,"cost_snapshot": number,"discount"?: number,"gross_amount": number,"id"?: string,"invoice_id": string,"line_no": number,"net_amount": number,"product_id": string,"qty": number,"tenant_id": string,"unit_id"?: string | null
+                  }
+                  Update: {
+                    "cash_price"?: number,"cost_snapshot"?: number,"discount"?: number,"gross_amount"?: number,"id"?: string,"invoice_id"?: string,"line_no"?: number,"net_amount"?: number,"product_id"?: string,"qty"?: number,"tenant_id"?: string,"unit_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_invoice_lines_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_invoice_id_fkey"
+      columns: ["tenant_id","invoice_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoices"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"sales_invoices": {
+                  Row: {
+                    "created_at": string,"created_by": string,"customer_id": string | null,"discount_total": number,"doc_date": string,"doc_no": number,"gross_total": number,"id": string,"kind": Database["public"]['Enums']["sale_kind"],"net_total": number,"request_id": string,"status": string,"tenant_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by": string,"customer_id"?: string | null,"discount_total"?: number,"doc_date": string,"doc_no": number,"gross_total": number,"id"?: string,"kind"?: Database["public"]['Enums']["sale_kind"],"net_total": number,"request_id": string,"status"?: string,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"customer_id"?: string | null,"discount_total"?: number,"doc_date"?: string,"doc_no"?: number,"gross_total"?: number,"id"?: string,"kind"?: Database["public"]['Enums']["sale_kind"],"net_total"?: number,"request_id"?: string,"status"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_invoices_tenant_id_customer_id_fkey"
+      columns: ["tenant_id","customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoices_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sales_payments": {
+                  Row: {
+                    "amount": number,"cash_account_id": string,"id": string,"invoice_id": string,"tenant_id": string
+                  }
+                  Insert: {
+                    "amount": number,"cash_account_id": string,"id"?: string,"invoice_id": string,"tenant_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"cash_account_id"?: string,"id"?: string,"invoice_id"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_payments_tenant_id_cash_account_id_fkey"
+      columns: ["tenant_id","cash_account_id"]
+isOneToOne: false
+      referencedRelation: "cash_accounts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_payments_tenant_id_cash_account_id_fkey"
+      columns: ["tenant_id","cash_account_id"]
+isOneToOne: false
+      referencedRelation: "pos_cash_accounts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_payments_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_payments_tenant_id_invoice_id_fkey"
+      columns: ["tenant_id","invoice_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoices"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"sales_return_lines": {
+                  Row: {
+                    "cost_snapshot": number,"discount": number,"gross_amount": number,"id": string,"original_line_id": string,"qty": number,"refund_amount": number,"return_condition": Database["public"]['Enums']["unit_condition"],"return_id": string,"tenant_id": string,"unit_id": string | null
+                  }
+                  Insert: {
+                    "cost_snapshot": number,"discount"?: number,"gross_amount": number,"id"?: string,"original_line_id": string,"qty": number,"refund_amount": number,"return_condition"?: Database["public"]['Enums']["unit_condition"],"return_id": string,"tenant_id": string,"unit_id"?: string | null
+                  }
+                  Update: {
+                    "cost_snapshot"?: number,"discount"?: number,"gross_amount"?: number,"id"?: string,"original_line_id"?: string,"qty"?: number,"refund_amount"?: number,"return_condition"?: Database["public"]['Enums']["unit_condition"],"return_id"?: string,"tenant_id"?: string,"unit_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_return_lines_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_original_line_id_fkey"
+      columns: ["tenant_id","original_line_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoice_lines"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_original_line_id_fkey"
+      columns: ["tenant_id","original_line_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoice_lines_no_cost"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_return_id_fkey"
+      columns: ["tenant_id","return_id"]
+isOneToOne: false
+      referencedRelation: "sales_returns"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"sales_returns": {
+                  Row: {
+                    "created_at": string,"created_by": string,"customer_id": string | null,"discount_total": number,"doc_date": string,"doc_no": number,"gross_total": number,"id": string,"original_invoice_id": string,"reason": string,"refund_cash_account_id": string,"request_id": string,"status": string,"tenant_id": string,"total_refund": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by": string,"customer_id"?: string | null,"discount_total"?: number,"doc_date": string,"doc_no": number,"gross_total": number,"id"?: string,"original_invoice_id": string,"reason": string,"refund_cash_account_id": string,"request_id": string,"status"?: string,"tenant_id": string,"total_refund": number
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"customer_id"?: string | null,"discount_total"?: number,"doc_date"?: string,"doc_no"?: number,"gross_total"?: number,"id"?: string,"original_invoice_id"?: string,"reason"?: string,"refund_cash_account_id"?: string,"request_id"?: string,"status"?: string,"tenant_id"?: string,"total_refund"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_returns_tenant_id_customer_id_fkey"
+      columns: ["tenant_id","customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_returns_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_returns_tenant_id_original_invoice_id_fkey"
+      columns: ["tenant_id","original_invoice_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoices"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_returns_tenant_id_refund_cash_account_id_fkey"
+      columns: ["tenant_id","refund_cash_account_id"]
+isOneToOne: false
+      referencedRelation: "cash_accounts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_returns_tenant_id_refund_cash_account_id_fkey"
+      columns: ["tenant_id","refund_cash_account_id"]
+isOneToOne: false
+      referencedRelation: "pos_cash_accounts"
       referencedColumns: ["tenant_id","id"]
     }
                   ]
@@ -559,6 +792,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "tenants"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_balances_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: true
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
     },{
       foreignKeyName: "stock_balances_tenant_id_product_id_fkey"
       columns: ["tenant_id","product_id"]
@@ -588,6 +827,12 @@ isOneToOne: false
       foreignKeyName: "stock_movements_tenant_id_product_id_fkey"
       columns: ["tenant_id","product_id"]
 isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "stock_movements_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
       referencedRelation: "products"
       referencedColumns: ["tenant_id","id"]
     },{
@@ -595,6 +840,12 @@ isOneToOne: false
       columns: ["unit_id"]
 isOneToOne: false
       referencedRelation: "inventory_units"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_unit_id_fkey"
+      columns: ["unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
       referencedColumns: ["id"]
     }
                   ]
@@ -614,6 +865,12 @@ isOneToOne: false
       columns: ["tenant_id","cash_account_id"]
 isOneToOne: false
       referencedRelation: "cash_accounts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "supplier_payments_tenant_id_cash_account_id_fkey"
+      columns: ["tenant_id","cash_account_id"]
+isOneToOne: false
+      referencedRelation: "pos_cash_accounts"
       referencedColumns: ["tenant_id","id"]
     },{
       foreignKeyName: "supplier_payments_tenant_id_fkey"
@@ -683,7 +940,186 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "pos_cash_accounts": {
+                  Row: {
+                    "id": string | null,"name": string | null,"tenant_id": string | null,"type": Database["public"]['Enums']["cash_account_type"] | null
+                  }
+                  Insert: {
+                           "id"?: string | null,"name"?: string | null,"tenant_id"?: string | null,"type"?: Database["public"]['Enums']["cash_account_type"] | null
+                         }
+                        Update: {
+                           "id"?: string | null,"name"?: string | null,"tenant_id"?: string | null,"type"?: Database["public"]['Enums']["cash_account_type"] | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "cash_accounts_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pos_inventory_units": {
+                  Row: {
+                    "condition": Database["public"]['Enums']["unit_condition"] | null,"id": string | null,"product_id": string | null,"serial_no": string | null,"tenant_id": string | null
+                  }
+                  Insert: {
+                           "condition"?: Database["public"]['Enums']["unit_condition"] | null,"id"?: string | null,"product_id"?: string | null,"serial_no"?: string | null,"tenant_id"?: string | null
+                         }
+                        Update: {
+                           "condition"?: Database["public"]['Enums']["unit_condition"] | null,"id"?: string | null,"product_id"?: string | null,"serial_no"?: string | null,"tenant_id"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "inventory_units_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventory_units_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "inventory_units_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"pos_products": {
+                  Row: {
+                    "available_qty": number | null,"barcode": string | null,"brand_id": string | null,"category_id": string | null,"default_price": string | null,"id": string | null,"model": string | null,"name_ar": string | null,"tenant_id": string | null,"tracking": Database["public"]['Enums']["tracking_type"] | null
+                  }
+                  Insert: {
+                           "available_qty"?: never,"barcode"?: string | null,"brand_id"?: string | null,"category_id"?: string | null,"default_price"?: never,"id"?: string | null,"model"?: string | null,"name_ar"?: string | null,"tenant_id"?: string | null,"tracking"?: Database["public"]['Enums']["tracking_type"] | null
+                         }
+                        Update: {
+                           "available_qty"?: never,"barcode"?: string | null,"brand_id"?: string | null,"category_id"?: string | null,"default_price"?: never,"id"?: string | null,"model"?: string | null,"name_ar"?: string | null,"tenant_id"?: string | null,"tracking"?: Database["public"]['Enums']["tracking_type"] | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "products_tenant_id_brand_id_fkey"
+      columns: ["tenant_id","brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "products_tenant_id_category_id_fkey"
+      columns: ["tenant_id","category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "products_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sales_invoice_lines_no_cost": {
+                  Row: {
+                    "cash_price": number | null,"discount": number | null,"gross_amount": number | null,"id": string | null,"invoice_id": string | null,"line_no": number | null,"net_amount": number | null,"product_id": string | null,"qty": number | null,"tenant_id": string | null,"unit_id": string | null
+                  }
+                  Insert: {
+                           "cash_price"?: number | null,"discount"?: number | null,"gross_amount"?: number | null,"id"?: string | null,"invoice_id"?: string | null,"line_no"?: number | null,"net_amount"?: number | null,"product_id"?: string | null,"qty"?: number | null,"tenant_id"?: string | null,"unit_id"?: string | null
+                         }
+                        Update: {
+                           "cash_price"?: number | null,"discount"?: number | null,"gross_amount"?: number | null,"id"?: string | null,"invoice_id"?: string | null,"line_no"?: number | null,"net_amount"?: number | null,"product_id"?: string | null,"qty"?: number | null,"tenant_id"?: string | null,"unit_id"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "sales_invoice_lines_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_invoice_id_fkey"
+      columns: ["tenant_id","invoice_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoices"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "pos_products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_product_id_fkey"
+      columns: ["tenant_id","product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_invoice_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"sales_return_lines_no_cost": {
+                  Row: {
+                    "discount": number | null,"gross_amount": number | null,"id": string | null,"original_line_id": string | null,"qty": number | null,"refund_amount": number | null,"return_condition": Database["public"]['Enums']["unit_condition"] | null,"return_id": string | null,"tenant_id": string | null,"unit_id": string | null
+                  }
+                  Insert: {
+                           "discount"?: number | null,"gross_amount"?: number | null,"id"?: string | null,"original_line_id"?: string | null,"qty"?: number | null,"refund_amount"?: number | null,"return_condition"?: Database["public"]['Enums']["unit_condition"] | null,"return_id"?: string | null,"tenant_id"?: string | null,"unit_id"?: string | null
+                         }
+                        Update: {
+                           "discount"?: number | null,"gross_amount"?: number | null,"id"?: string | null,"original_line_id"?: string | null,"qty"?: number | null,"refund_amount"?: number | null,"return_condition"?: Database["public"]['Enums']["unit_condition"] | null,"return_id"?: string | null,"tenant_id"?: string | null,"unit_id"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "sales_return_lines_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_original_line_id_fkey"
+      columns: ["tenant_id","original_line_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoice_lines"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_original_line_id_fkey"
+      columns: ["tenant_id","original_line_id"]
+isOneToOne: false
+      referencedRelation: "sales_invoice_lines_no_cost"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_return_id_fkey"
+      columns: ["tenant_id","return_id"]
+isOneToOne: false
+      referencedRelation: "sales_returns"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "sales_return_lines_tenant_id_unit_id_fkey"
+      columns: ["tenant_id","unit_id"]
+isOneToOne: false
+      referencedRelation: "pos_inventory_units"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "attach_to_document":
@@ -728,11 +1164,17 @@ isOneToOne: false
 "manage_tenant_secret_ref":
 { Args: { "p_kind": Database["public"]['Enums']["secret_kind"],"p_tenant_id": string,"p_vault_secret_id": string }; Returns: string
                            },
+"post_cash_sale":
+{ Args: { "p_customer_id"?: string,"p_doc_date": string,"p_invoice_discount"?: string,"p_lines"?: Json,"p_payments"?: Json,"p_request_id": string,"p_tenant_id": string }; Returns: Json
+                           },
 "post_inventory_adjustment":
 { Args: { "p_adjustment_date": string,"p_lines": Json,"p_reason": string,"p_request_id": string,"p_tenant_id": string }; Returns: Json
                            },
 "post_purchase_invoice":
 { Args: { "p_cash_account_id"?: string,"p_discount"?: number,"p_invoice_date": string,"p_lines": Json,"p_paid_amount"?: number,"p_request_id": string,"p_supplier_id": string,"p_supplier_invoice_no": string,"p_tenant_id": string }; Returns: Json
+                           },
+"post_sales_return":
+{ Args: { "p_doc_date": string,"p_lines": Json,"p_original_invoice_id": string,"p_reason": string,"p_refund_cash_account_id": string,"p_request_id": string,"p_tenant_id": string }; Returns: Json
                            },
 "post_supplier_payment":
 { Args: { "p_amount": number,"p_cash_account_id": string,"p_note"?: string,"p_payment_date": string,"p_request_id": string,"p_supplier_id": string,"p_tenant_id": string }; Returns: Json
@@ -748,7 +1190,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "account_type": "asset"|"liability"|"equity"|"revenue"|"expense","attachment_kind": "national_id_front"|"national_id_back"|"signed_contract"|"supplier_invoice"|"supplier_credit_note"|"payment_proof"|"receipt"|"unit_photo"|"seller_national_id_front"|"seller_national_id_back"|"other","attachment_owner_type": "customer"|"guarantor"|"installment_contract"|"purchase_invoice"|"purchase_return"|"supplier_payment"|"expense"|"trade_in","attachment_status": "pending"|"active"|"superseded","cash_account_type": "cash"|"bank"|"wallet","membership_role": "owner"|"manager"|"cashier"|"collector"|"accountant","movement_type": "purchase"|"sale"|"return_in"|"return_out"|"adjustment"|"opening","normal_side": "debit"|"credit","posting_request_status": "processing"|"completed","secret_kind": "whatsapp"|"n8n"|"llm","tenant_status": "trial"|"active"|"suspended","tracking_type": "serial"|"quantity","unit_condition": "new"|"used"|"open_box","unit_status": "in_stock"|"sold"|"returned_to_supplier"|"written_off"
+            "account_type": "asset"|"liability"|"equity"|"revenue"|"expense","attachment_kind": "national_id_front"|"national_id_back"|"signed_contract"|"supplier_invoice"|"supplier_credit_note"|"payment_proof"|"receipt"|"unit_photo"|"seller_national_id_front"|"seller_national_id_back"|"other","attachment_owner_type": "customer"|"guarantor"|"installment_contract"|"purchase_invoice"|"purchase_return"|"supplier_payment"|"expense"|"trade_in","attachment_status": "pending"|"active"|"superseded","cash_account_type": "cash"|"bank"|"wallet","membership_role": "owner"|"manager"|"cashier"|"collector"|"accountant","movement_type": "purchase"|"sale"|"return_in"|"return_out"|"adjustment"|"opening","normal_side": "debit"|"credit","posting_request_status": "processing"|"completed","sale_kind": "cash"|"installment","secret_kind": "whatsapp"|"n8n"|"llm","tenant_status": "trial"|"active"|"suspended","tracking_type": "serial"|"quantity","unit_condition": "new"|"used"|"open_box","unit_status": "in_stock"|"sold"|"returned_to_supplier"|"written_off"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -868,7 +1310,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "account_type": ["asset", "liability", "equity", "revenue", "expense"],"attachment_kind": ["national_id_front", "national_id_back", "signed_contract", "supplier_invoice", "supplier_credit_note", "payment_proof", "receipt", "unit_photo", "seller_national_id_front", "seller_national_id_back", "other"],"attachment_owner_type": ["customer", "guarantor", "installment_contract", "purchase_invoice", "purchase_return", "supplier_payment", "expense", "trade_in"],"attachment_status": ["pending", "active", "superseded"],"cash_account_type": ["cash", "bank", "wallet"],"membership_role": ["owner", "manager", "cashier", "collector", "accountant"],"movement_type": ["purchase", "sale", "return_in", "return_out", "adjustment", "opening"],"normal_side": ["debit", "credit"],"posting_request_status": ["processing", "completed"],"secret_kind": ["whatsapp", "n8n", "llm"],"tenant_status": ["trial", "active", "suspended"],"tracking_type": ["serial", "quantity"],"unit_condition": ["new", "used", "open_box"],"unit_status": ["in_stock", "sold", "returned_to_supplier", "written_off"]
+            "account_type": ["asset", "liability", "equity", "revenue", "expense"],"attachment_kind": ["national_id_front", "national_id_back", "signed_contract", "supplier_invoice", "supplier_credit_note", "payment_proof", "receipt", "unit_photo", "seller_national_id_front", "seller_national_id_back", "other"],"attachment_owner_type": ["customer", "guarantor", "installment_contract", "purchase_invoice", "purchase_return", "supplier_payment", "expense", "trade_in"],"attachment_status": ["pending", "active", "superseded"],"cash_account_type": ["cash", "bank", "wallet"],"membership_role": ["owner", "manager", "cashier", "collector", "accountant"],"movement_type": ["purchase", "sale", "return_in", "return_out", "adjustment", "opening"],"normal_side": ["debit", "credit"],"posting_request_status": ["processing", "completed"],"sale_kind": ["cash", "installment"],"secret_kind": ["whatsapp", "n8n", "llm"],"tenant_status": ["trial", "active", "suspended"],"tracking_type": ["serial", "quantity"],"unit_condition": ["new", "used", "open_box"],"unit_status": ["in_stock", "sold", "returned_to_supplier", "written_off"]
           }
         }
 } as const

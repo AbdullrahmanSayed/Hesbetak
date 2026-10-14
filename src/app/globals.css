@@ -35,3 +35,61 @@
     @apply bg-background font-sans text-foreground antialiased;
   }
 }
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 4mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .thermal-receipt,
+  .thermal-receipt * {
+    visibility: visible;
+  }
+
+  .thermal-receipt {
+    display: block !important;
+    direction: rtl;
+    position: absolute;
+    inset: 0;
+    width: 72mm;
+    color: #000;
+    background: #fff;
+    font-family: var(--font-plex-arabic), sans-serif;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .receipt-center {
+    text-align: center;
+  }
+
+  .receipt-rule {
+    margin: 6px 0;
+    border-top: 1px dashed #000;
+  }
+
+  .receipt-line {
+    margin-bottom: 5px;
+  }
+
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .receipt-total {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .receipt-footer {
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+}

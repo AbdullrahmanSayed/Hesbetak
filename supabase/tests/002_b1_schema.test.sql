@@ -43,10 +43,10 @@ select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n 
 -- B2+B3 tables now exist, verify B4+ tables don't exist
 select is(
   (select count(*)::int from pg_tables where schemaname = 'public' and tablename in (
-    'sales_invoices', 'sales_invoice_lines', 'installment_contracts', 'installments'
+    'installment_contracts', 'installments', 'installment_allocations'
   )),
   0,
-  'no B4+ tables exist'
+  'no B5 installment tables exist'
 );
 
 select is(
