@@ -12,6 +12,7 @@ const EXPECTED_MIGRATIONS = [
   "20261013000000_b2_master_data_attachments.sql",
   "20261014000000_b3_purchases_inventory.sql",
   "20261015000000_b4_sales_pos.sql",
+  "20261016000000_b5_installment_sales.sql",
 ];
 
 describe("migrations guard", () => {

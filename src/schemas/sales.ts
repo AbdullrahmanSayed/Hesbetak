@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-const moneyWireSchema = z.string().regex(/^(0|[1-9][0-9]*)$/, "قيمة المبلغ غير صحيحة");
+/** Decimal string for money values (integer piasters as string) */
+export const decimalString = z.string().regex(/^(0|[1-9][0-9]*)$/, "قيمة المبلغ غير صحيحة");
+const moneyWireSchema = decimalString;
 const positiveMoneyWireSchema = z.string().regex(/^[1-9][0-9]*$/, "قيمة المبلغ يجب أن تكون موجبة");
 const businessDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "تنسيق التاريخ غير صحيح");
 

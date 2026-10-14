@@ -40,13 +40,13 @@ select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n 
 select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = 'journal_entries'), false), 'journal_entries has RLS enabled');
 select ok(coalesce((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = 'journal_lines'), false), 'journal_lines has RLS enabled');
 
--- B2+B3 tables now exist, verify B4+ tables don't exist
+-- B2+B3+B4+B5 tables now exist, verify B6+ tables don't exist
 select is(
   (select count(*)::int from pg_tables where schemaname = 'public' and tablename in (
-    'installment_contracts', 'installments', 'installment_allocations'
+    'receipts', 'receipt_allocations', 'early_settlements'
   )),
   0,
-  'no B5 installment tables exist'
+  'no B6 receipts/collections tables exist'
 );
 
 select is(

@@ -1,4 +1,4 @@
-﻿
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
@@ -1167,6 +1167,12 @@ isOneToOne: false
 "post_cash_sale":
 { Args: { "p_customer_id"?: string,"p_doc_date": string,"p_invoice_discount"?: string,"p_lines"?: Json,"p_payments"?: Json,"p_request_id": string,"p_tenant_id": string }; Returns: Json
                            },
+"post_installment_sale":
+{ Args: { "p_tenant_id": string,"p_request_id": string,"p_doc_date": string,"p_customer_id": string,"p_lines": Json,"p_down_payment": string,"p_down_payment_cash_account_id"?: string,"p_months": number,"p_factor_bp"?: number,"p_manual_deferred_price"?: string,"p_rounding_step"?: number,"p_first_due_date"?: string,"p_upload_session_id"?: string }; Returns: Json
+                           },
+"preview_installment_schedule":
+{ Args: { "p_cash_total": string,"p_down_payment": string,"p_months": number,"p_factor_bp"?: number,"p_manual_deferred_price"?: string,"p_rounding_step"?: number,"p_first_due_date"?: string }; Returns: Json
+                           },
 "post_inventory_adjustment":
 { Args: { "p_adjustment_date": string,"p_lines": Json,"p_reason": string,"p_request_id": string,"p_tenant_id": string }; Returns: Json
                            },
@@ -1310,7 +1316,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "account_type": ["asset", "liability", "equity", "revenue", "expense"],"attachment_kind": ["national_id_front", "national_id_back", "signed_contract", "supplier_invoice", "supplier_credit_note", "payment_proof", "receipt", "unit_photo", "seller_national_id_front", "seller_national_id_back", "other"],"attachment_owner_type": ["customer", "guarantor", "installment_contract", "purchase_invoice", "purchase_return", "supplier_payment", "expense", "trade_in"],"attachment_status": ["pending", "active", "superseded"],"cash_account_type": ["cash", "bank", "wallet"],"membership_role": ["owner", "manager", "cashier", "collector", "accountant"],"movement_type": ["purchase", "sale", "return_in", "return_out", "adjustment", "opening"],"normal_side": ["debit", "credit"],"posting_request_status": ["processing", "completed"],"sale_kind": ["cash", "installment"],"secret_kind": ["whatsapp", "n8n", "llm"],"tenant_status": ["trial", "active", "suspended"],"tracking_type": ["serial", "quantity"],"unit_condition": ["new", "used", "open_box"],"unit_status": ["in_stock", "sold", "returned_to_supplier", "written_off"]
+            "account_type": ["asset", "liability", "equity", "revenue", "expense"],"contract_status": ["active", "settled", "early_settled", "rescheduled", "written_off", "cancelled"],"installment_status": ["pending", "partially_paid", "paid", "frozen", "written_off", "cancelled"],"attachment_kind": ["national_id_front", "national_id_back", "signed_contract", "supplier_invoice", "supplier_credit_note", "payment_proof", "receipt", "unit_photo", "seller_national_id_front", "seller_national_id_back", "other"],"attachment_owner_type": ["customer", "guarantor", "installment_contract", "purchase_invoice", "purchase_return", "supplier_payment", "expense", "trade_in"],"attachment_status": ["pending", "active", "superseded"],"cash_account_type": ["cash", "bank", "wallet"],"membership_role": ["owner", "manager", "cashier", "collector", "accountant"],"movement_type": ["purchase", "sale", "return_in", "return_out", "adjustment", "opening"],"normal_side": ["debit", "credit"],"posting_request_status": ["processing", "completed"],"sale_kind": ["cash", "installment"],"secret_kind": ["whatsapp", "n8n", "llm"],"tenant_status": ["trial", "active", "suspended"],"tracking_type": ["serial", "quantity"],"unit_condition": ["new", "used", "open_box"],"unit_status": ["in_stock", "sold", "returned_to_supplier", "written_off"]
           }
         }
 } as const
